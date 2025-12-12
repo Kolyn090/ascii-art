@@ -2,15 +2,14 @@ import os.path
 import sys
 import cv2
 
-from slicer import Slicer
-from writer import Writer
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
-from static import invert_image, floor_fill, resize_nearest_neighbor # type: ignore
+from slicer import Slicer  # type: ignore
+from writer import Writer  # type: ignore
+from static import invert_image, floor_fill, resize_nearest_neighbor  # type: ignore
 
 def main():
     factor = 4
-    img_path = '../binary/bin_85.png'
+    img_path = './test/contour_35_100.png'
     save_path = 'ascii_art.png'
     img = cv2.imread(img_path)
     img = resize_nearest_neighbor(img, factor)
