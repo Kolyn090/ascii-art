@@ -1,0 +1,43 @@
+import cv2
+import numpy as np
+
+def invert_image(img: np.ndarray) -> np.ndarray:
+    return cv2.bitwise_not(img)
+
+def floor_fill(img: np.ndarray,
+               seed_point: tuple[int, int],
+               fill_color: int) -> np.ndarray:
+    flood_img = img.copy()
+    h, w = img.shape[:2]
+    if len(img.shape) == 2:
+        new_val = (fill_color,)
+    else:
+        new_val = (fill_color, fill_color, fill_color)
+    mask = np.zeros((h+2, w+2), np.uint8)
+    cv2.floodFill(flood_img, mask, seedPoint=seed_point, newVal=new_val)
+    return flood_img
+
+def resize_nearest_neighbor(img: np.ndarray,
+                            factor: int) -> np.ndarray:
+    scale = factor
+    new_width = int(img.shape[1] * scale)
+    new_height = int(img.shape[0] * scale)
+    new_size = (new_width, new_height)
+    resized = cv2.resize(img, new_size, interpolation=cv2.INTER_NEAREST)
+    return resized
+
+def test():
+    img_path = '../f_input/prof.jpg'
+    img = cv2.imread(img_path)
+    h, w = img.shape[:2]
+    seed_point = (w - 1, h - 1)
+    factor = 2
+
+    # img = invert_image(img)
+    # img = floor_fill(img, seed_point, 0)
+    img = resize_nearest_neighbor(img, factor)
+
+    cv2.imwrite('test.png', img)
+
+if __name__ == '__main__':
+    test()
