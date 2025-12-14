@@ -51,6 +51,14 @@ def increase_contrast(img: np.ndarray,
 def to_grayscale(img: np.ndarray) -> np.ndarray:
     return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+def smooth_colors(img, sigma_s=75, sigma_r=0.4):
+    return cv2.edgePreservingFilter(
+        img,
+        flags=cv2.RECURS_FILTER,
+        sigma_s=sigma_s,
+        sigma_r=sigma_r
+    )
+
 def test():
     img_path = '../f_input/prof.jpg'
     img = cv2.imread(img_path)

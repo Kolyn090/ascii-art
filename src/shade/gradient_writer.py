@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from gradient_divide import divide
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
-from static import resize_nearest_neighbor, resize_bilinear, invert_image, floor_fill, increase_contrast, to_grayscale  # type: ignore
+from static import resize_nearest_neighbor, resize_bilinear, invert_image, floor_fill, increase_contrast, to_grayscale, smooth_colors  # type: ignore
 from writer import Writer, CharTemplate, PositionalCharTemplate  # type: ignore
 from slicer import Cell, Slicer  # type: ignore
 
@@ -27,7 +27,9 @@ class GradientWriter:
             writer = Writer()
             writer.assign_char_templates(self.templates[i])
             img = self.gradient_imgs[i]
-            img[img == 0] = 255
+            # img[img == 0] = 255
+            # img = invert_image(img)
+            cv2.imwrite(f"p_img_{i}.png", img)
             slicer = Slicer()
             cells = slicer.slice(img, (13, 22))
             h, w = img.shape[:2]
@@ -54,8 +56,8 @@ class GradientWriter:
     def stack(self, p_ct_lists: list[list[PositionalCharTemplate]]) -> list[PositionalCharTemplate]:
         self.assign_template_rank()
         table: dict[tuple[int, int], CharTemplate] = dict()
-        # for p_ct_list in reversed(p_ct_lists):
-        for p_ct_list in p_ct_lists:
+        for p_ct_list in reversed(p_ct_lists):
+        # for p_ct_list in p_ct_lists:
             for p_ct in p_ct_list:
                 char_template = p_ct.char_template
                 top_left = p_ct.top_left
@@ -87,7 +89,7 @@ class GradientWriter:
         :return: Return True if tc1 has lower rank in templates.
         Otherwise, False.
         """
-        return self.template_rank[tc1] < self.template_rank[tc2]
+        return self.template_rank[tc1] > self.template_rank[tc2]
 
     def assign_template_rank(self):
         count = 0
@@ -96,16 +98,17 @@ class GradientWriter:
                 self.template_rank[template] = count
                 count += 1
         # Force space to have the lowest rank
-        self.template_rank[" "] = count
+        self.template_rank[" "] = -1
 
 def test():
-    factor = 32
+    factor = 8
     img_path = '../f_input/prof.jpg'
     save_folder = 'test'
     save_to_folder = True
     templates = [
-        [".", ",", ":", "-", ";", "_", "^", "'"],
-        ["+", "=", "*", "i", "l", "!", "[", "]", "~"],
+        [".", ",", "-", "_", "^", "'"],
+        [":", ";", "!", "i"],
+        ["+", "=", "*", "l", "[", "]", "~"],
         ["%", "&", "8", "B"],
         ["W", "M", "@", "$", "#"]
     ]
@@ -113,6 +116,7 @@ def test():
     img = increase_contrast(img, 2)
     img = to_grayscale(img)
     img = resize_bilinear(img, factor)
+    # img = smooth_colors(img, sigma_s=60, sigma_r=0.08)
     h, w = img.shape[:2]
 
     cv2.imwrite("img.png", img)
@@ -126,8 +130,8 @@ def test():
 
     for i in range(len(gradient_writer.gradient_imgs)):
         cv2.imwrite(f"img_{i}.png", gradient_writer.gradient_imgs[i])
-
-    return
+    #
+    # return
     gradient_writer.match(w, h)
 
 if __name__ == '__main__':
