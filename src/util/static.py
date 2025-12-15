@@ -59,6 +59,11 @@ def smooth_colors(img, sigma_s=75, sigma_r=0.4):
         sigma_r=sigma_r
     )
 
+def to_binary_strong(img: np.ndarray) -> np.ndarray:
+    binary = img.copy()
+    binary[binary != 255] = 0
+    return binary
+
 def test():
     img_path = '../f_input/prof.jpg'
     img = cv2.imread(img_path)

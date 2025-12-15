@@ -49,29 +49,33 @@ An example of contour image:
 2️⃣ Execute `trace.py`.
 **Example**:
 ```commandline
-python trace.py --image_path ./contour/contour_180_260.png --factor 8 --chars file
+python trace.py --image_path ./contour/contour_180_260.png --factor 8 --chars file --matching_method slow
 ```
 
 **Japanese Hiragana:**
 ```commandline
-python trace.py --image_path ./contour/contour_240_200.png --factor 8 --chars file --invert_color True --char_bound_height 24 --char_bound_width 22 --font C:/Windows/Fonts/msgothic.ttc --chars_file_path ../trace/chars_file_jp.txt
+python trace.py --image_path ./contour/contour_240_200.png --factor 8 --chars file --char_bound_height 24 --char_bound_width 22 --font C:/Windows/Fonts/msgothic.ttc --chars_file_path ../trace/chars_file_jp_hiragana.txt --matching_method vector --vector_ratio 0.5 --vector_top_k 5 --invert_color
 ```
 
 **Parameters**
 
-| argument            | help                                                                                       |
-|---------------------|--------------------------------------------------------------------------------------------|
-| --image_path        | The path of the image.                                                                     |
-| --resize_method     | The image resize method. Check below for available options.                                |
-| --save_path         | The directory where the result image will be saved to.                                     |
-| --factor            | The resize factor of the new image.                                                        |
-| --font              | The font to be used to render the image.                                                   |
-| --chars             | The characters you want to use for rendering the image. Check below for available options. |
-| --chars_file_path   | The text file of your characters.                                                          |
-| --font_size         | The font size.                                                                             |
-| --char_bound_width  | The width of one character. We assume each character has the same size.                    |
-| --char_bound_height | The height of one character. We assume each character has the same size.                   |
-| --invert_color      | Set to True to invert the color of the result image.                                       |
+| argument            | help                                                                                                              |
+|---------------------|-------------------------------------------------------------------------------------------------------------------|
+| --image_path        | The path of the image.                                                                                            |
+| --resize_method     | The image resize method. Check below for available options.                                                       |
+| --save_path         | The directory where the result image will be saved to.                                                            |
+| --factor            | The resize factor of the new image.                                                                               |
+| --font              | The font to be used to render the image.                                                                          |
+| --chars             | The characters you want to use for rendering the image. Check below for available options.                        |
+| --chars_file_path   | The text file of your characters.                                                                                 |
+| --font_size         | The font size.                                                                                                    |
+| --char_bound_width  | The width of one character. We assume each character has the same size.                                           |
+| --char_bound_height | The height of one character. We assume each character has the same size.                                          |
+| --invert_color      | Set to True to invert the color of the result image.                                                              |
+| --max_workers       | The maximum number of multithread workers.                                                                        |
+| --matching_method   | The algorithm for template (character) matching. Check below for available options.                               |
+| --vector_ratio      | Only used if the matching method is 'vector'. Each smaller image will be resized by this value before comparison. |
+| --vector_top_k      | Only used if the matching method is 'vector'. Only compare the smaller image to the k best candidates.            |
 
 **resize_method**
 
@@ -86,6 +90,15 @@ python trace.py --image_path ./contour/contour_240_200.png --factor 8 --chars fi
 |-------|----------------------------------------------------------------------------------------|
 | ascii | Use all 128 standard ASCII characters as rendering characters.                         |
 | file  | Read characters from file `trace/chars_file.txt`. New line character will be excluded. |
+
+**matching_method**
+
+| code      | help                                                                                                                                |
+|-----------|-------------------------------------------------------------------------------------------------------------------------------------|
+| slow      | The slowest matching algorithm with the best matching quality. The templates are grayscale.                                         |
+| optimized | Almost twice as fast as slow. The templates are binary. The resulting image will look bold compared to slow method.                 |
+| fast      | Almost twice as fast as optimized. Utilizes XOR comparison. The resulting image is very similar to optimized method.                |
+| vector    | Almost ten times as fast as slow. Vectorize all smaller images and compare the flattened array. The resulting image is much bolder. |
 
 An example of trace ascii art image:
 

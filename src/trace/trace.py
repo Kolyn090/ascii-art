@@ -21,8 +21,14 @@ def main():
     parser.add_argument('--char_bound_width', type=int, default=13)
     parser.add_argument('--char_bound_height', type=int, default=22)
     parser.add_argument('--resize_method', type=str, default='nearest_neighbor')
-    parser.add_argument('--invert_color', type=bool, default=False)
+    parser.add_argument('--invert_color', action='store_true')
     parser.add_argument('--chars_file_path', type=str, default='../trace/chars_file.txt')
+
+    parser.add_argument('--max_workers', type=int, default=16)
+    parser.add_argument('--matching_method', type=str, default='fast')
+    parser.add_argument('--vector_ratio', type=float, default=0.5)
+    parser.add_argument('--vector_top_k', type=int, default=5)
+
     args = parser.parse_args()
 
     factor = args.factor
@@ -37,6 +43,10 @@ def main():
     slicer = Slicer()
     cells = slicer.slice(img, (args.char_bound_width, args.char_bound_height))
     writer = Writer()
+    writer.approx_ratio = args.vector_ratio
+    writer.max_workers = args.max_workers
+    writer.vector_top_k = args.vector_top_k
+    writer.assign_get_most_similar(args.matching_method)
     writer.font = args.font
     writer.font_size = font_size
     writer.char_bound = (args.char_bound_width, args.char_bound_height)
