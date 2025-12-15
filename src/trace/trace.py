@@ -1,13 +1,14 @@
 import os
 import sys
 import cv2
+import math
 import argparse
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
 from slicer import Slicer  # type: ignore
 from writer import Writer  # type: ignore
 from arg_util import TraceArgUtil  # type: ignore
-from static import resize_nearest_neighbor, resize_bilinear  # type: ignore
+from static import resize_nearest_neighbor, resize_bilinear, invert_image  # type: ignore
 
 def main():
     parser = argparse.ArgumentParser()
@@ -20,6 +21,7 @@ def main():
     parser.add_argument('--char_bound_width', type=int, default=13)
     parser.add_argument('--char_bound_height', type=int, default=22)
     parser.add_argument('--resize_method', type=str, default='nearest_neighbor')
+    parser.add_argument('--invert_color', type=bool, default=False)
     args = parser.parse_args()
 
     factor = args.factor
@@ -38,6 +40,10 @@ def main():
     writer.font_size = font_size
     writer.assign_char_templates(chars)
     converted = writer.match_cells(cells, w, h)[0]
+    converted = converted[0:math.floor(h / args.char_bound_height) * args.char_bound_height,
+                            0:math.floor(w / args.char_bound_width) * args.char_bound_width]
+    if args.invert_color:
+        converted = invert_image(converted)
     cv2.imwrite(save_path, converted)
 
 if __name__ == '__main__':
