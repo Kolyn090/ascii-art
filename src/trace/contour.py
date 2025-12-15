@@ -15,23 +15,6 @@ def contour(img: np.ndarray, canny1: float, canny2: float,
     contour_img = cv2.bitwise_not(edges)
     return contour_img
 
-def test():
-    img_path = '../f_input/prof.jpg'
-    img = cv2.imread(img_path)
-    save_to_folder = True
-    save_folder = 'test'
-    if save_to_folder:
-        os.makedirs(save_folder, exist_ok=True)
-
-    canny1s = list(range(10, 80, 5))
-    canny2s = list(range(100, 260, 10))
-    for canny1 in canny1s:
-        for canny2 in canny2s:
-            c = contour(img, canny1, canny2)
-            if save_to_folder:
-                save_path = os.path.join(save_folder, f"contour_{canny1}_{canny2}.png")
-                cv2.imwrite(save_path, c)
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_path', type=str)

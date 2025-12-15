@@ -8,11 +8,10 @@ Art. The following guides describes the process.
 ## 📖 Guide 1: Draw Image Contour
 1️⃣ `cd` to `src/trace`.
 
-
 2️⃣ Execute `contour.py`.
 **Example**:
 ```commandline
-python contour.py --image_path ../monalisa.jpg --canny1_min 0 --canny1_max 80 --canny1_step 20 --canny2_min 100 --canny2_max 180 --canny2_step 20
+python contour.py --image_path ../girl_with_pearl_earring.jpg --canny1_min 0 --canny1_max 270 --canny1_step 20 --canny2_min 100 --canny2_max 270 --canny2_step 20
 ```
 
 **Parameters**
@@ -33,11 +32,62 @@ python contour.py --image_path ../monalisa.jpg --canny1_min 0 --canny1_max 80 --
 | --dilate_iter | The number of iterations of dilate.                                        |
 | --erode_iter  | The number of iterations of erode.                                         |
 
+An example of contour image:
+
+<p align="center">
+    <img src="../trace/readme_img/img0.png" width="400">
+</p>
+
 ---
 
 ## 📖 Guide 2: Trace ASCII Art
+1️⃣ `cd` to `src/trace`.
 
+2️⃣ Execute `trace.py`.
+**Example**:
+```commandline
+python trace.py --image_path ./contour/contour_40_160.png --factor 8 --chars file
+```
+
+**Parameters**
+
+| argument            | help                                                                                       |
+|---------------------|--------------------------------------------------------------------------------------------|
+| --image_path        | The path of the image.                                                                     |
+| --resize_method     | The image resize method. Check below for available options.                                |
+| --save_path         | The directory where the result image will be saved to.                                     |
+| --factor            | The resize factor of the new image.                                                        |
+| --font              | The font to be used to render the image.                                                   |
+| --chars             | The characters you want to use for rendering the image. Check below for available options. |
+| --font_size         | The font size.                                                                             |
+| --char_bound_width  | The width of one character. We assume each character has the same size.                    |
+| --char_bound_height | The height of one character. We assume each character has the same size.                   |
+
+
+**resize_method**
+
+| code             | help                                          |
+|------------------|-----------------------------------------------|
+| nearest neighbor | Resize image with nearest neighbor algorithm. |
+| bilinear         | Resize image with bilinear algorithm.         |
+
+**chars**
+
+| code  | help                                                                                   |
+|-------|----------------------------------------------------------------------------------------|
+| ascii | Use all 128 standard ASCII characters as rendering characters.                         |
+| file  | Read characters from file `trace/chars_file.txt`. New line character will be excluded. |
+
+An example of trace ascii art image:
+
+<p align="center">
+    <img src="../trace/readme_img/img1.png" width="400">
+</p>
 
 ---
 
-⭐ Image Credit: monalisa.jpa (Wikipedia)
+⭐ Image Credit: girl_with_pearl_earring (Wikipedia)
+
+<p align="center">
+    <img src="../girl_with_pearl_earring.jpg" width="400">
+</p>

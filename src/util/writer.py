@@ -19,6 +19,8 @@ class PositionalCharTemplate:
 class Writer:
     def __init__(self):
         self.font_size = 24
+        self.max_workers = 16
+        self.char_bound = (13, 22)
         self.font = 'C:/Windows/Fonts/consolab.ttf'
         self.char_templates: list[CharTemplate] = []
         self.space_template = CharTemplate()
@@ -26,11 +28,11 @@ class Writer:
     def match_cells(self, cells: list[Cell],
                     w: int, h: int) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
         result_img = np.zeros((h, w, 3), dtype=np.uint8)
-        with ThreadPoolExecutor(max_workers=16) as executor:
-            templates = list(executor.map(lambda cell: self.paste_to_img(cell, result_img), cells))
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            templates = list(executor.map(lambda cell: self._paste_to_img(cell, result_img), cells))
         return result_img, templates
 
-    def paste_to_img(self, cell: Cell, result_img: np.ndarray) -> PositionalCharTemplate:
+    def _paste_to_img(self, cell: Cell, result_img: np.ndarray) -> PositionalCharTemplate:
         """
         Paste the cell to the final image.
         Return the most similar template to the given cell.
@@ -39,7 +41,7 @@ class Writer:
         :param result_img: The final image
         :return: The most similar template to cell
         """
-        most_similar = self.get_most_similar(cell)
+        most_similar = self._get_most_similar(cell)
         template = most_similar.template
         top_left = cell.top_left
         bottom_right_y = top_left[1] + template.shape[0]
@@ -51,7 +53,7 @@ class Writer:
         result.top_left = top_left
         return result
 
-    def get_most_similar(self, cell: Cell) -> CharTemplate:
+    def _get_most_similar(self, cell: Cell) -> CharTemplate:
         """
         Get the most similar template to the given cell.
         Warning: if the image is empty, the result template
@@ -75,8 +77,8 @@ class Writer:
         for char_template in self.char_templates:
             template = char_template.template
             template_resized = cv2.resize(template, (w, h), interpolation=cv2.INTER_NEAREST)
-            img_gray = self.ensure_gray(img)
-            template_gray = self.ensure_gray(template_resized)
+            img_gray = self._ensure_gray(img)
+            template_gray = self._ensure_gray(template_resized)
             score = np.sum(img_gray == template_gray) / (w * h)
             if score > best_score:
                 best_score = score
@@ -84,7 +86,7 @@ class Writer:
         return best_template
 
     @staticmethod
-    def ensure_gray(img):
+    def _ensure_gray(img):
         if len(img.shape) == 3:
             return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         return img
@@ -93,15 +95,14 @@ class Writer:
         imageFont = ImageFont.truetype(self.font, self.font_size)
         result = []
         for char in chars:
-            char_template = self.create_char_template(char, imageFont)
+            char_template = self._create_char_template(char, imageFont)
             result.append(char_template)
         self.char_templates = result
-        self.space_template = self.create_char_template(" ", imageFont)
+        self.space_template = self._create_char_template(" ", imageFont)
         return result
 
-    @staticmethod
-    def create_char_template(char: str, imageFont: ImageFont) -> CharTemplate:
-        img = Image.new("RGB", (13, 22), "white")
+    def _create_char_template(self, char: str, imageFont: ImageFont) -> CharTemplate:
+        img = Image.new("RGB", self.char_bound, "white")
         draw = ImageDraw.Draw(img)
         draw.text((0, 0), char, font=imageFont, fill="black")
         char_template = CharTemplate()
