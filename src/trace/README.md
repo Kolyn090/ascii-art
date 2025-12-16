@@ -38,7 +38,7 @@ python contour.py --image_path ../girl_with_pearl_earring.jpg --canny1_min 0 --c
 An example of contour image:
 
 <p align="center">
-    <img src="../trace/readme_imgs/img0.png" width="400">
+    <img src="../../resource/readme_imgs/trace_girl.png" width="400">
 </p>
 
 ---
@@ -54,7 +54,7 @@ python trace.py --image_path ./contour/contour_180_260.png --factor 8 --chars fi
 
 **Japanese Hiragana:**
 ```commandline
-python trace.py --image_path ./contour/contour_240_200.png --factor 8 --chars file --char_bound_height 24 --char_bound_width 22 --font C:/Windows/Fonts/msgothic.ttc --chars_file_path ../trace/chars_file_jp_hiragana.txt --matching_method vector --vector_ratio 0.5 --vector_top_k 5 --invert_color
+python trace.py --image_path ./contour/contour_240_200.png --factor 8 --chars file --char_bound_height 24 --char_bound_width 22 --font C:/Windows/Fonts/msgothic.ttc --chars_file_path ../../resource/char_files/chars_file_hiragana.txt --matching_method vector --vector_ratio 0.5 --vector_top_k 5 --invert_color
 ```
 
 **Parameters**
@@ -103,7 +103,7 @@ python trace.py --image_path ./contour/contour_240_200.png --factor 8 --chars fi
 An example of trace ascii art image:
 
 <p align="center">
-    <img src="../trace/readme_imgs/img1.png" width="400">
+    <img src="../../resource/readme_imgs/trace_ascii_girl.png" width="400">
 </p>
 
 ---
@@ -111,5 +111,5 @@ An example of trace ascii art image:
 ⭐ Image Credit: girl_with_pearl_earring (Wikipedia)
 
 <p align="center">
-    <img src="../girl_with_pearl_earring.jpg" width="400">
+    <img src="../../resource/imgs/girl_with_pearl_earring.jpg" width="400">
 </p>

@@ -7,11 +7,11 @@
 Edge Detection + ASCII character matching
 
 <p align="center">
-    <img src="./readme_imgs/img0.png" width="600">
+    <img src="./resource/readme_imgs/main_girl.png" width="600">
 </p>
 
 <p align="center">
-    <img src="./readme_imgs/img1.png" width="600">
+    <img src="./resource/readme_imgs/main_tsunami.png" width="600">
 </p>
 
 ---
