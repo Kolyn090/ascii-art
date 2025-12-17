@@ -8,6 +8,7 @@ shade filter requires you to set up a palette.
 1️⃣ `cd` to `src/shade`.
 
 2️⃣ Set up a palette. Recommended save directory is `resource/palette_files`.
+Check out the [palette tutorial](../../palette_tut.md).
 
 3️⃣ Execute `shade.py`.
 **Example**:

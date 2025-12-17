@@ -62,7 +62,7 @@ python trace.py --image_path ./contour/contour_180_260.png --resize_factor 8 --c
 python trace.py --image_path ./contour/contour_240_200.png --resize_factor 8 --chars file --char_bound_height 24 --char_bound_width 22 --font C:/Windows/Fonts/msgothic.ttc --font_size 24 --chars_file_path ../../resource/char_files/chars_file_hiragana.txt --match_method vector --approx_ratio 0.5 --vector_top_k 5 --invert_color
 ```
 
-**An Example using Palette file**:
+**An Example using Palette file**, Check out the [palette tutorial](../../palette_tut.md) if you would like to make your own palette:
 ```commandline
 python trace.py --image_path ./contour/contour_180_260.png --resize_factor 8 --palette_path ../../resource/palette_files/palette_chars.json --match_method slow
 ```
