@@ -1,19 +1,19 @@
-# Shade ASCII Filter
+# Edge Gradient ASCII Filter
 
-The shade filter renders the image with shading.
-Unlike in the trace filter, where palette is optional,
-shade filter requires you to set up a palette. 
+This filter renders shading around the edges in the given image.
+Like shade filter, a palette is required. (Might also require more
+manual finetuning than the shade filter)
 
-## 📖 Guide: Shade ASCII Art
-1️⃣ `cd` to `src/shade`.
+## 📖 Guide: Gradient ASCII Art
+1️⃣ `cd` to `src/edge_gradient`.
 
 2️⃣ Set up a palette. Recommended save directory is `resource/palette_files`.
 Check out the [palette tutorial](../../palette_tut.md).
 
-3️⃣ Execute `shade.py`.
+3️⃣ Execute `edge_gradient.py`.
 **Example**:
 ```commandline
-python shade.py --image_path ../../resource/imgs/monalisa.jpg --resize_factor 8
+python edge_gradient.py --image_path ../../resource/imgs/tsunami.jpg --resize_factor 8 --contrast_factor 8 --resize_method bilinear --invert_color
 ```
 
 **Parameters**
@@ -31,6 +31,10 @@ python shade.py --image_path ../../resource/imgs/monalisa.jpg --resize_factor 8
 | --palette_path     | Use a palette.                                                                                                            |
 | --max_workers      | The maximum number of multithread workers.                                                                                |
 | --invert_color     | If included, invert the color of the result image.                                                                        |
+| --sigmaX           | The standard deviation of GaussianBlur kernel in the horizontal direction.                                                |
+| --ksize            | The kernel size of contour function.                                                                                      |
+| --gx               | The image gradient in the horizontal edges.                                                                               |
+| --gy               | The image gradient in the vertical edges.                                                                                 |
 
 **resize_method**
 
@@ -39,16 +43,17 @@ python shade.py --image_path ../../resource/imgs/monalisa.jpg --resize_factor 8
 | nearest neighbor | Resize image with nearest neighbor algorithm. |
 | bilinear         | Resize image with bilinear algorithm.         |
 
-An example of ascii art image (compressed):
+An example of ascii art image:
 
 <p align="center">
-    <img src="../../resource/readme_imgs/shade_monalisa.png" width="400">
+    <img src="../../resource/readme_imgs/eg_tsunami.png" width="400">
 </p>
+
 
 ---
 
-⭐ Image Credit: monalisa (Wikipedia)
+⭐ Image Credit: tsunami (Wikipedia)
 
 <p align="center">
-    <img src="../../resource/imgs/monalisa.jpg" width="400">
+    <img src="../../resource/imgs/tsunami.jpg" width="400">
 </p>

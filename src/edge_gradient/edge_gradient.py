@@ -4,7 +4,7 @@ import cv2
 import time
 import argparse
 
-from gradient_writer import GradientWriter
+from eg_writer import EdgeGradientWriter
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
 from slicer import Slicer  # type: ignore
@@ -28,6 +28,10 @@ def main():
     parser.add_argument('--palette_path', type=str, default='../../resource/palette_files/palette_default.json')
     parser.add_argument('--max_workers', type=int, default=16)
     parser.add_argument('--invert_color', action='store_true')
+    parser.add_argument('--sigmaX', type=float, default=0)
+    parser.add_argument('--ksize', type=int, default=5)
+    parser.add_argument('--gx', type=int, default=3)
+    parser.add_argument('--gy', type=int, default=3)
 
     args = parser.parse_args()
 
@@ -39,8 +43,13 @@ def main():
     img = to_grayscale(img)
     h, w = img.shape[:2]
 
-    gradient_writer = GradientWriter(templates, args.max_workers)
-    gradient_writer.assign_gradient_imgs(img, args.thresholds_gamma)
+    gradient_writer = EdgeGradientWriter(templates, args.max_workers)
+    gradient_writer.assign_gradient_imgs(img,
+                                         args.sigmaX,
+                                         args.thresholds_gamma,
+                                         args.ksize,
+                                         args.gx,
+                                         args.gy)
     converted = gradient_writer.match(w, h)
     if args.invert_color:
         converted = invert_image(converted)

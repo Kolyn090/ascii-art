@@ -111,7 +111,7 @@ python trace.py --image_path ./contour/contour_180_260.png --resize_factor 8 --p
 | fast      | Almost twice as fast as optimized. Utilizes XOR comparison. The resulting image is very similar to optimized method.                |
 | vector    | Almost ten times as fast as slow. Vectorize all smaller images and compare the flattened array. The resulting image is much bolder. |
 
-An example of trace ascii art image:
+An example of ascii art image:
 
 <p align="center">
     <img src="../../resource/readme_imgs/trace_ascii_girl.png" width="400">
