@@ -41,9 +41,9 @@ class Writer:
         self.imageFont = imageFont
         self.max_workers = max_workers
         self.char_bound = char_bound
-        self.approx_ratio = approx_ratio
+        self.approx_ratio = approx_ratio if approx_ratio > 0 else 0.5
         self.get_most_similar = self.get_matching_method(match_method)
-        self.vector_top_k = vector_top_k
+        self.vector_top_k = vector_top_k if vector_top_k > 0 else 5
 
         self.char_templates: list[CharTemplate] = []
         self.space_template = None
@@ -131,7 +131,7 @@ class Writer:
         if len(self.char_templates) == 0:
             raise Exception("You have not assigned any template yet.")
 
-        img_bin = (img > 0)
+        img_bin = to_binary_strong(img)
         # All white → space
         if np.all(img_bin):
             return self.space_template
@@ -163,7 +163,7 @@ class Writer:
         if len(self.char_templates) == 0:
             raise Exception("You have not assigned any template yet.")
 
-        img_bin = (img > 0)
+        img_bin = to_binary_strong(img)
 
         # All white → space
         if np.all(img_bin):
@@ -189,7 +189,7 @@ class Writer:
         return best_template
 
     def _get_most_similar_vector(self, img: np.ndarray):
-        img_bin = (img > 0).astype(np.uint8)
+        img_bin = to_binary_strong(img)
         if np.all(img_bin):
             return self.space_template
 

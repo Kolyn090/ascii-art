@@ -9,7 +9,7 @@ from static import resize_nearest_neighbor, resize_bilinear
 
 class TraceArgUtil:
     @staticmethod
-    def get_chars(code: str, file_path='../trace/chars_file.txt') -> list[str]:
+    def get_chars(code: str, file_path='../../resource/char_files/chars_file.txt') -> list[str]:
         match code:
             case 'ascii':
                 return TraceArgUtil._get_all_ascii()
@@ -63,7 +63,7 @@ class ShadeArgUtil:
 
 
 def test():
-    templates = ShadeArgUtil.get_palette_json('../../resource/gradient_char_files/palette_default.json')
+    templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_default.json')
     for template in templates:
         print(template)
 

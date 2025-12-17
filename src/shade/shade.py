@@ -26,7 +26,7 @@ def main():
     parser.add_argument('--sigma_s', type=int, default=5)
     parser.add_argument('--sigma_r', type=float, default=0.5)
     parser.add_argument('--thresholds_gamma', type=float, default=0.5)
-    parser.add_argument('--palette_path', type=str, default='../../resource/gradient_char_files/palette_default.json')
+    parser.add_argument('--palette_path', type=str, default='../../resource/palette_files/palette_default.json')
     parser.add_argument('--max_workers', type=int, default=16)
 
     args = parser.parse_args()

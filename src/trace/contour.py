@@ -1,5 +1,7 @@
 import os
 import sys
+import time
+
 import cv2
 import argparse
 import shutil
@@ -24,6 +26,8 @@ def contour(img: np.ndarray, canny1: float, canny2: float,
     return contour_img
 
 def main():
+    start = time.perf_counter()
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_path', type=str)
     parser.add_argument('--save_folder', type=str, default='contour')
@@ -42,7 +46,9 @@ def main():
     parser.add_argument('--contrast_window_size', type=int, default=8)
     parser.add_argument('--invert_color', action='store_true')
     args = parser.parse_args()
-    shutil.rmtree(args.save_folder)
+
+    if os.path.exists(args.save_folder):
+        shutil.rmtree(args.save_folder)
     os.makedirs(args.save_folder, exist_ok=True)
 
     img = cv2.imread(args.image_path)
@@ -62,6 +68,9 @@ def main():
             save_path = os.path.join(args.save_folder,
                                      f"contour_{canny1}_{canny2}.png",)
             cv2.imwrite(save_path, c)
+
+    elapsed = time.perf_counter() - start
+    print(f"Completed: spent {elapsed:.6f} seconds")
 
 if __name__ == '__main__':
     main()
