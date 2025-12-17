@@ -1,7 +1,10 @@
+import json
 import os.path
 
 import numpy as np
+from PIL import ImageFont
 
+from palette_template import PaletteTemplate
 from static import resize_nearest_neighbor, resize_bilinear
 
 class TraceArgUtil:
@@ -33,3 +36,46 @@ class TraceArgUtil:
             case 'bilinear':
                 return resize_bilinear(img, factor)
         return resize_nearest_neighbor(img, factor)
+
+class ShadeArgUtil:
+    @staticmethod
+    def get_palette(file_path: str) -> list[list[str]]:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            result = [list(dict.fromkeys(c for c in line if c != '\n')) for line in lines]
+            for lst in result:
+                if len(lst) == 0:
+                    lst.append(' ')
+            return result
+
+    @staticmethod
+    def get_palette_json(file_path: str) -> list[PaletteTemplate]:
+        def parse_template(obj: dict) -> PaletteTemplate:
+            return PaletteTemplate(
+                obj["layer"],
+                list(dict.fromkeys(c for c in obj["chars"] if c != '\n')),
+                ImageFont.truetype(obj["font"], int(obj["font_size"])),
+                (obj["char_bound_width"], obj["char_bound_height"]),
+                obj["approx_ratio"],
+                obj["vector_top_k"],
+                obj["get_most_similar_method"]
+            )
+
+        result = []
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = json.load(f)
+            name = content["name"]
+            templates = content["templates"]
+            print(f"Reading palette from {name}.")
+            for template in templates:
+                result.append(parse_template(template))
+        return result
+
+
+def test():
+    templates = ShadeArgUtil.get_palette_json('../../resource/gradient_char_files/palette_default.json')
+    for template in templates:
+        print(template)
+
+if __name__ == '__main__':
+    test()
