@@ -4,7 +4,9 @@
 
 ---
 
-![](../../resource/gallery/trace/gpe_invert_colored.png)
+<p align="center">
+    <img src="../../resource/gallery/trace/gpe_invert_colored.png" width="400">
+</p>
 
 ```commandline
 python contour.py ^
@@ -28,7 +30,9 @@ python trace.py ^
 
 ---
 
-![](../../resource/gallery/trace/gpe_invert_colored_invert.png)
+<p align="center">
+    <img src="../../resource/gallery/trace/gpe_invert_colored_invert.png" width="400">
+</p>
 
 ```commandline
 python contour.py ^
@@ -53,7 +57,9 @@ python trace.py ^
 
 ---
 
-![](../../resource/gallery/trace/gpe_colored.png)
+<p align="center">
+    <img src="../../resource/gallery/trace/gpe_colored.png" width="400">
+</p>
 
 ```commandline
 python contour.py ^
@@ -76,7 +82,9 @@ python trace.py ^
 
 ---
 
-![](../../resource/gallery/trace/gpe_colored_invert.png)
+<p align="center">
+    <img src="../../resource/gallery/trace/gpe_colored_invert.png" width="400">
+</p>
 
 ```commandline
 python contour.py ^
