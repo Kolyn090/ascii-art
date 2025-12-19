@@ -6,6 +6,8 @@ from PIL import ImageFont
 
 from palette_template import PaletteTemplate
 from static import resize_nearest_neighbor, resize_bilinear
+from color_util import (process_image_blocks, blend_ascii_with_color,
+                        copy_black_pixels, average_color_block)
 
 class TraceArgUtil:
     @staticmethod
@@ -61,6 +63,26 @@ class ShadeArgUtil:
                 result.append(parse_template(template))
         return result
 
+class ColorArgUtil:
+    @staticmethod
+    def color_image(option: str,
+                    ascii_img: np.ndarray,
+                    original_img: np.ndarray,
+                    cell_size: tuple[int, int]) -> np.ndarray | None:
+        match option:
+            case 'original':
+                return ColorArgUtil.color_original(ascii_img,
+                                                   original_img,
+                                                   cell_size)
+        return None
+
+    @staticmethod
+    def color_original(ascii_img: np.ndarray,
+                       original_img: np.ndarray,
+                       cell_size: tuple[int, int]) -> np.ndarray:
+        color_converted = process_image_blocks(original_img, cell_size, average_color_block)
+        converted = blend_ascii_with_color(ascii_img, color_converted, 1)
+        return copy_black_pixels(ascii_img, converted)
 
 def test():
     templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_default.json')

@@ -1,5 +1,4 @@
 import os
-import cv2
 import sys
 import math
 import numpy as np
@@ -13,7 +12,6 @@ from static import (resize_nearest_neighbor, resize_bilinear, invert_image,  # t
 from writer import Writer, CharTemplate, PositionalCharTemplate  # type: ignore
 from slicer import Cell, Slicer  # type: ignore
 from palette_template import PaletteTemplate  # type: ignore
-from arg_util import ShadeArgUtil  # type: ignore
 
 class GradientWriter:
     def __init__(self,
@@ -46,12 +44,12 @@ class GradientWriter:
             list(executor.map(lambda cell: self._paste_to_img(cell, result_img), stacks))
 
         result_img = invert_image(result_img)
-        large_char_bound = self._get_large_char_bound()
+        large_char_bound = self.get_large_char_bound()
         result_img = result_img[0:math.floor(h / large_char_bound[1]) * large_char_bound[1],
                                 0:math.floor(w / large_char_bound[0]) * large_char_bound[0]]
         return result_img
 
-    def _get_large_char_bound(self) -> tuple[int, int]:
+    def get_large_char_bound(self) -> tuple[int, int]:
         result_width = 0
         result_height = 0
         for template in self.templates:
@@ -111,41 +109,3 @@ class GradientWriter:
                 count += 1
         # Force space to have the lowest rank
         self.template_rank[" "] = -1
-
-def test():
-    factor = 4
-    thresholds_gamma = 0.3
-    img_path = '../f_input/prof.jpg'
-    save_folder = 'test_writer'
-    save_to_folder = True
-    img = cv2.imread(img_path)
-    img = increase_contrast(img, 2)
-
-    if save_to_folder:
-        os.makedirs(save_folder, exist_ok=True)
-
-    # if save_to_folder:
-    #     cv2.imwrite(os.path.join(save_folder, "original_img.png"), img)
-
-    img = resize_bilinear(img, factor)
-    img = smooth_colors(img, sigma_s=1, sigma_r=0.6)
-    img = to_grayscale(img)
-    h, w = img.shape[:2]
-
-    # if save_to_folder:
-    #     cv2.imwrite(os.path.join(save_folder, "img.png"), img)
-
-    templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_default.json')
-    gradient_writer = GradientWriter(templates, max_workers=16)
-    gradient_writer.assign_gradient_imgs(img, thresholds_gamma)
-
-    for i in range(len(gradient_writer.gradient_imgs)):
-        if save_to_folder:
-            cv2.imwrite(os.path.join(save_folder, f"gradient_{i}.png"), gradient_writer.gradient_imgs[i])
-
-    converted = gradient_writer.match(w, h)
-    if save_to_folder:
-        cv2.imwrite(os.path.join(save_folder, "test.png"), converted)
-
-if __name__ == '__main__':
-    test()

@@ -2,7 +2,25 @@ import cv2
 import numpy as np
 
 def invert_image(img: np.ndarray) -> np.ndarray:
-    return cv2.bitwise_not(img)
+    # Float image -> assume normalized 0..1
+    if img.dtype.kind == "f":
+        return 1.0 - img
+
+    # ---- Binary image cases ----
+    bw_only = np.all((img == 0) | (img == 255))
+    if bw_only:
+        return cv2.bitwise_not(img)
+
+    # uint8 binary mask 0/255
+    if img.ndim == 2 and img.dtype == np.uint8:
+        mn, mx = img.min(), img.max()
+        if (mn, mx) in [(0, 255), (0, 1)]:
+            return 255 - img if mx == 255 else 1 - img
+
+    # ---- Color image ----
+    result = img.copy()
+    result[..., :3] = cv2.bitwise_not(img[..., :3])  # keep alpha if exists
+    return result
 
 def floor_fill(img: np.ndarray,
                seed_point: tuple[int, int],

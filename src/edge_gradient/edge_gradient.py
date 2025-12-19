@@ -9,9 +9,8 @@ from eg_writer import EdgeGradientWriter
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
 from slicer import Slicer  # type: ignore
 from writer import Writer  # type: ignore
-from static import (resize_nearest_neighbor, resize_bilinear, invert_image,   # type: ignore
-                    floor_fill, increase_contrast, to_grayscale, smooth_colors)  # type: ignore
-from arg_util import ShadeArgUtil  # type: ignore
+from static import invert_image, increase_contrast, to_grayscale, smooth_colors  # type: ignore
+from arg_util import ShadeArgUtil, ColorArgUtil, TraceArgUtil  # type: ignore
 
 def main():
     start = time.perf_counter()
@@ -32,25 +31,36 @@ def main():
     parser.add_argument('--ksize', type=int, default=5)
     parser.add_argument('--gx', type=int, default=3)
     parser.add_argument('--gy', type=int, default=3)
+    parser.add_argument('--color_option', type=str, default='')
 
     args = parser.parse_args()
 
     templates = ShadeArgUtil.get_palette_json(args.palette_path)
     img = cv2.imread(args.image_path)
     img = increase_contrast(img, args.contrast_factor)
-    img = resize_bilinear(img, args.resize_factor)
+    img = TraceArgUtil.resize(args.resize_method, img, args.resize_factor)
     img = smooth_colors(img, sigma_s=args.sigma_s, sigma_r=args.sigma_r)
+    o_img = img.copy()
     img = to_grayscale(img)
     h, w = img.shape[:2]
 
-    gradient_writer = EdgeGradientWriter(templates, args.max_workers)
-    gradient_writer.assign_gradient_imgs(img,
-                                         args.sigmaX,
-                                         args.thresholds_gamma,
-                                         args.ksize,
-                                         args.gx,
-                                         args.gy)
-    converted = gradient_writer.match(w, h)
+    eg_writer = EdgeGradientWriter(templates, args.max_workers)
+    eg_writer.assign_gradient_imgs(img,
+                                    args.sigmaX,
+                                    args.thresholds_gamma,
+                                    args.ksize,
+                                    args.gx,
+                                    args.gy)
+    converted = eg_writer.match(w, h)
+
+    large_char_bound = eg_writer.gradient_writer.get_large_char_bound()
+    color_converted = ColorArgUtil.color_image(args.color_option,
+                                               converted,
+                                               o_img,
+                                               large_char_bound)
+    if color_converted is not None:
+        converted = color_converted
+
     if args.invert_color:
         converted = invert_image(converted)
     cv2.imwrite(args.save_path, converted)

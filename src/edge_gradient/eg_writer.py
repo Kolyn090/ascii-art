@@ -35,7 +35,7 @@ class EdgeGradientWriter:
         return self.gradient_writer.match(w, h)
 
 def test():
-    factor = 16
+    factor = 4
     thresholds_gamma = 1.8
     sigmaX = 0.5
     ksize = 9
