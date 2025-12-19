@@ -14,6 +14,8 @@ Edge Detection + ASCII character matching
     <img src="./resource/readme_imgs/main_tsunami.png" width="600">
 </p>
 
+🖼️ Go to [gallery](./src/trace/gallery.md) to see more examples!
+
 ---
 
 [**Shade ASCII Filter**](./src/shade/README.md)
