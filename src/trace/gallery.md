@@ -105,3 +105,54 @@ python trace.py ^
 --original_image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --invert_color
 ```
+
+---
+
+<p align="center">
+    <img src="../../resource/gallery/trace/gpe_join.png" width="400">
+</p>
+
+```commandline
+python trace_join.py ^
+--image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
+--canny1 180 ^
+--canny2 260 ^
+--gb_size 5 ^
+--gb_sigmaX 0 ^
+--kernel_size 2 ^
+--dilate_iter 1 ^
+--erode_iter 0 ^
+--contrast_factor 4 ^
+--contrast_window_size 8 ^
+--resize_factor 4 ^
+--resize_method nearest_neighbor ^
+--match_method slow ^
+--palette_path ../../resource/palette_files/palette_chars.json ^
+--color_option original
+```
+
+---
+
+<p align="center">
+    <img src="../../resource/gallery/trace/gpe_join_invert.png" width="400">
+</p>
+
+```commandline
+python trace_join.py ^
+--image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
+--canny1 180 ^
+--canny2 260 ^
+--gb_size 5 ^
+--gb_sigmaX 0 ^
+--kernel_size 2 ^
+--dilate_iter 1 ^
+--erode_iter 0 ^
+--contrast_factor 4 ^
+--contrast_window_size 8 ^
+--resize_factor 4 ^
+--resize_method nearest_neighbor ^
+--match_method slow ^
+--palette_path ../../resource/palette_files/palette_chars.json ^
+--color_option original ^
+--invert_color
+```

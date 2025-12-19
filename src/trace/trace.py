@@ -13,8 +13,8 @@ from slicer import Slicer  # type: ignore
 from writer import Writer  # type: ignore
 from arg_util import TraceArgUtil, ShadeArgUtil, ColorArgUtil  # type: ignore
 from palette_template import PaletteTemplate  # type: ignore
-from static import resize_nearest_neighbor, resize_bilinear, invert_image  # type: ignore
-from color_util import copy_non_black_pixels_to_white  # type: ignore
+from static import invert_image  # type: ignore
+# from color_util import copy_non_black_pixels_to_white  # type: ignore
 
 def main():
     start = time.perf_counter()

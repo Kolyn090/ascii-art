@@ -127,6 +127,99 @@ An example of ascii art image:
 
 ---
 
+## 📕 Extra Guide: Join-Trace ASCII Art
+
+1️⃣ `cd` to `src/trace`.
+
+2️⃣ Execute `trace_join.py`.
+
+**Example**:
+```commandline
+python trace_join.py ^
+--image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
+--canny1 180 ^
+--canny2 260 ^
+--gb_size 5 ^
+--gb_sigmaX 0 ^
+--kernel_size 2 ^
+--dilate_iter 1 ^
+--erode_iter 0 ^
+--contrast_factor 4 ^
+--contrast_window_size 8 ^
+--resize_factor 8 ^
+--resize_method nearest_neighbor ^
+--match_method slow ^
+--palette_path ../../resource/palette_files/palette_chars.json
+```
+
+**Parameters**
+
+| argument               | help                                                                                                                   |
+|------------------------|------------------------------------------------------------------------------------------------------------------------|
+| --image_path           | The path of the image.                                                                                                 |
+| --canny1               | The value of threshold1 for Canny.                                                                                     |
+| --canny2               | The value of threshold2 for Canny.                                                                                     |
+| --gb_size              | The kernel size of GaussianBlur.                                                                                       |
+| --gb_sigmaX            | The standard deviation of GaussianBlur kernel in the horizontal direction.                                             |
+| --kernel_size          | The kernel size of contour function.                                                                                   |
+| --dilate_iter          | The number of iterations of dilate.                                                                                    |
+| --erode_iter           | The number of iterations of erode.                                                                                     |
+| --contrast_factor      | The contrast factor based on the original image.                                                                       |
+| --contrast_window_size | The kernel size of contrast filter.                                                                                    |
+| --save_path            | The directory where the result image will be saved to.                                                                 |
+| --resize_method        | The image resize method. Check below for available options.                                                            |
+| --resize_factor        | The resize factor of the new image.                                                                                    |
+| --font                 | The font to be used to render the image.                                                                               |
+| --chars                | The characters you want to use for rendering the image. Check below for available options.                             |
+| --chars_file_path      | The text file of your characters.                                                                                      |
+| --font_size            | The font size.                                                                                                         |
+| --char_bound_width     | The width of one character. We assume each character has the same size.                                                |
+| --char_bound_height    | The height of one character. We assume each character has the same size.                                               |
+| --invert_color         | If included, invert the color of the result image.                                                                     |
+| --max_workers          | The maximum number of multithread workers.                                                                             |
+| --match_method         | The algorithm for template (character) matching. Check below for available options.                                    |
+| --approx_ratio         | Only used if the matching method is 'vector'. Each smaller image will be resized by this value before comparison.      |
+| --vector_top_k         | Only used if the matching method is 'vector'. Only compare the smaller image to the k best candidates.                 |
+| --palette_path         | Use a palette. Only the first template will be used. The values in template can be overridden with explicit arguments. |
+| --color_option         | The option to color the image. Check below for available options.                                                      |
+
+**resize_method**
+
+| code             | help                                          |
+|------------------|-----------------------------------------------|
+| nearest neighbor | Resize image with nearest neighbor algorithm. |
+| bilinear         | Resize image with bilinear algorithm.         |
+
+**chars**
+
+| code  | help                                                                                   |
+|-------|----------------------------------------------------------------------------------------|
+| ascii | Use all 128 standard ASCII characters as rendering characters.                         |
+| file  | Read characters from file `trace/chars_file.txt`. New line character will be excluded. |
+
+**match_method**
+
+| code      | help                                                                                                                                |
+|-----------|-------------------------------------------------------------------------------------------------------------------------------------|
+| slow      | The slowest matching algorithm with the best matching quality. The templates are grayscale.                                         |
+| optimized | Almost twice as fast as slow. The templates are binary. The resulting image will look bold compared to slow method.                 |
+| fast      | Almost twice as fast as optimized. Utilizes XOR comparison. The resulting image is very similar to optimized method.                |
+| vector    | Almost ten times as fast as slow. Vectorize all smaller images and compare the flattened array. The resulting image is much bolder. |
+
+**color_option**
+
+| code     | help                                                           |
+|----------|----------------------------------------------------------------|
+| original | Color the ASCII art with the (resized) original image's color. |
+
+An example of ascii art image:
+
+<p align="center">
+    <img src="../../resource/readme_imgs/trace_join_girl.png" width="400">
+</p>
+
+---
+
 🖼️ Also check out the [gallery](./gallery.md) for more examples!
 
 ---
