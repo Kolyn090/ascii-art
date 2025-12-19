@@ -77,7 +77,7 @@ def main():
                                                invert_ascii=True)
 
     if color_converted is not None:
-        color_converted = copy_non_black_pixels_to_white(converted, color_converted)
+        # color_converted = copy_non_black_pixels_to_white(converted, color_converted)
         converted = color_converted
 
     if args.invert_color:
