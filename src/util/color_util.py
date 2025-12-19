@@ -32,6 +32,16 @@ def copy_black_pixels(source_img: np.ndarray,
     result[mask, :3] = [0, 0, 0]
     return result
 
+def copy_non_black_pixels_to_white(source_img: np.ndarray,
+                                   target_img: np.ndarray) -> np.ndarray:
+    assert source_img.shape[:2] == target_img.shape[:2], \
+        "Images must have the same dimensions."
+
+    result = target_img.copy()
+    mask = np.all(source_img[..., :3] > 0, axis=2)
+    result[mask, :3] = [255, 255, 255]
+    return result
+
 def process_image_blocks(img: np.ndarray,
                          cell_size: tuple[int, int],
                          block_func: Callable[[np.ndarray], np.ndarray]) -> np.ndarray:

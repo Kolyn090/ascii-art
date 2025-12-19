@@ -5,14 +5,16 @@ import time
 import cv2
 import math
 import argparse
+import numpy as np
 from PIL import ImageFont
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
 from slicer import Slicer  # type: ignore
 from writer import Writer  # type: ignore
-from arg_util import TraceArgUtil, ShadeArgUtil  # type: ignore
+from arg_util import TraceArgUtil, ShadeArgUtil, ColorArgUtil  # type: ignore
 from palette_template import PaletteTemplate  # type: ignore
 from static import resize_nearest_neighbor, resize_bilinear, invert_image  # type: ignore
+from color_util import copy_non_black_pixels_to_white  # type: ignore
 
 def main():
     start = time.perf_counter()
@@ -34,6 +36,8 @@ def main():
     parser.add_argument('--match_method', type=str, default='')
     parser.add_argument('--approx_ratio', type=float, default=-1)
     parser.add_argument('--vector_top_k', type=int, default=-1)
+    parser.add_argument('--color_option', type=str, default='')
+    parser.add_argument('--original_image_path', type=str, default='')
 
     # Including, can be overridden with explicit arguments:
     # chars
@@ -61,6 +65,21 @@ def main():
     converted = writer.match_cells(cells, w, h)[0]
     converted = converted[0:math.floor(h / char_bound_height) * char_bound_height,
                             0:math.floor(w / char_bound_width) * char_bound_width]
+
+    original_img = get_original_image(args)
+    original_img = original_img[0:math.floor(h / char_bound_height) * char_bound_height,
+                                0:math.floor(w / char_bound_width) * char_bound_width]
+
+    color_converted = ColorArgUtil.color_image(args.color_option,
+                                               converted,
+                                               original_img,
+                                               (char_bound_width, char_bound_height),
+                                               invert_ascii=True)
+
+    if color_converted is not None:
+        color_converted = copy_non_black_pixels_to_white(converted, color_converted)
+        converted = color_converted
+
     if args.invert_color:
         converted = invert_image(converted)
     cv2.imwrite(args.save_path, converted)
@@ -112,6 +131,14 @@ def assemble_template(args) -> PaletteTemplate | None:
         template.match_method = args.match_method
 
     return template
+
+def get_original_image(args) -> np.ndarray | None:
+    original_img_path = args.original_image_path
+    if not os.path.exists(original_img_path):
+        return None
+    img = cv2.imread(original_img_path)
+    img = TraceArgUtil.resize(args.resize_method, img, args.resize_factor)
+    return img
 
 if __name__ == '__main__':
     main()
