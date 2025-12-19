@@ -28,6 +28,8 @@ distinguish the gradient level for your!
     <img src="./resource/readme_imgs/main_monalisa.png" width="600">
 </p>
 
+🖼️ Go to [gallery](./src/shade/gallery.md) to see more examples!
+
 ---
 
 [**Edge Gradient ASCII Filter**](./src/edge_gradient/README.md)

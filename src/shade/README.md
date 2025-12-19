@@ -54,6 +54,10 @@ An example of ascii art image (compressed):
 
 ---
 
+🖼️ Also check out the [gallery](./gallery.md) for more examples!
+
+---
+
 ⭐ Image Credit: monalisa (Wikipedia)
 
 <p align="center">
