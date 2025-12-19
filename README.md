@@ -40,6 +40,10 @@ Shade around the edges.
     <img src="./resource/readme_imgs/main_tsunami2.png" width="600">
 </p>
 
+🖼️ Go to [gallery](./src/edge_gradient/gallery.md) to see more examples!
+
+---
+
 ⭐ Image Credit: 
 * girl with pearl earring by Johannes Vermeer (Wikipedia)
 * tsunami by hokusai (Wikipedia)

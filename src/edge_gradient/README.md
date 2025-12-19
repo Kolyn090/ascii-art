@@ -56,6 +56,9 @@ An example of ascii art image:
     <img src="../../resource/readme_imgs/eg_tsunami.png" width="400">
 </p>
 
+---
+
+🖼️ Also check out the [gallery](./gallery.md) for more examples!
 
 ---
 
