@@ -7,7 +7,8 @@ from PIL import ImageFont
 from palette_template import PaletteTemplate
 from static import resize_nearest_neighbor, resize_bilinear, invert_image
 from color_util import (process_image_blocks, blend_ascii_with_color,
-                        copy_black_pixels, average_color_block)
+                        copy_black_pixels, average_color_block,
+                        PositionalColor, reassign_positional_colors)
 
 class TraceArgUtil:
     @staticmethod
@@ -69,7 +70,7 @@ class ColorArgUtil:
                     ascii_img: np.ndarray,
                     original_img: np.ndarray,
                     cell_size: tuple[int, int],
-                    invert_ascii=False) -> np.ndarray | None:
+                    invert_ascii=False) -> tuple[np.ndarray, np.ndarray, list[PositionalColor]] | None:
         if ascii_img is None or original_img is None:
             return None
 
@@ -85,11 +86,13 @@ class ColorArgUtil:
     def color_original(ascii_img: np.ndarray,
                        original_img: np.ndarray,
                        cell_size: tuple[int, int],
-                       invert_ascii: bool) -> np.ndarray:
-        color_converted = process_image_blocks(original_img, cell_size, average_color_block)
+                       invert_ascii: bool) \
+            -> tuple[np.ndarray, np.ndarray, list[PositionalColor]]:
+        color_blocks, p_cs = process_image_blocks(original_img, cell_size, average_color_block)
         ascii_img = invert_image(ascii_img) if invert_ascii else ascii_img
-        converted = blend_ascii_with_color(ascii_img, color_converted, 1)
-        return copy_black_pixels(ascii_img, converted)
+        color_converted = blend_ascii_with_color(ascii_img, color_blocks, 1)
+        color_converted = copy_black_pixels(ascii_img, color_converted)
+        return color_converted, color_blocks, p_cs
 
 def test():
     templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_default.json')

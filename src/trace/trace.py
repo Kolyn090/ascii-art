@@ -14,7 +14,7 @@ from writer import Writer  # type: ignore
 from arg_util import TraceArgUtil, ShadeArgUtil, ColorArgUtil  # type: ignore
 from palette_template import PaletteTemplate  # type: ignore
 from static import invert_image  # type: ignore
-# from color_util import copy_non_black_pixels_to_white  # type: ignore
+from color_util import reassign_positional_colors  # type: ignore
 from ascii_writer import AsciiWriter  # type: ignore
 
 def main():
@@ -73,22 +73,26 @@ def main():
     original_img = original_img[0:math.floor(h / char_bound_height) * char_bound_height,
                                 0:math.floor(w / char_bound_width) * char_bound_width]
 
-    color_converted = ColorArgUtil.color_image(args.color_option,
-                                               converted,
-                                               original_img,
-                                               (char_bound_width, char_bound_height),
-                                               invert_ascii=True)
-
+    color_converted, color_blocks, p_cs = ColorArgUtil.color_image(args.color_option,
+                                                                   converted,
+                                                                   original_img,
+                                                                   (char_bound_width, char_bound_height),
+                                                                   invert_ascii=True)
     if color_converted is not None:
-        # color_converted = copy_non_black_pixels_to_white(converted, color_converted)
         converted = color_converted
 
     if args.invert_color:
+        color_blocks = invert_image(color_blocks)
         converted = invert_image(converted)
+
     cv2.imwrite(args.save_path, converted)
 
     if args.save_chars:
-        ascii_writer = AsciiWriter(p_cts, int(converted.shape[:2][1]/char_bound_width), args.save_chars_path)
+        reassign_positional_colors(p_cs, color_blocks)
+        ascii_writer = AsciiWriter(p_cts,
+                                   p_cs,
+                                   int(converted.shape[:2][1]/char_bound_width),
+                                   args.save_chars_path)
         ascii_writer.save()
 
     elapsed = time.perf_counter() - start

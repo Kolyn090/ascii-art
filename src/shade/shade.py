@@ -13,6 +13,7 @@ from static import (resize_nearest_neighbor, resize_bilinear, invert_image,   # 
                     floor_fill, increase_contrast, to_grayscale, smooth_colors)  # type: ignore
 from arg_util import ShadeArgUtil, ColorArgUtil, TraceArgUtil  # type: ignore
 from ascii_writer import AsciiWriter  # type: ignore
+from color_util import reassign_positional_colors  # type: ignore
 
 def main():
     start = time.perf_counter()
@@ -49,19 +50,25 @@ def main():
     converted, p_cts = gradient_writer.match(w, h)
 
     large_char_bound = gradient_writer.get_large_char_bound()
-    color_converted = ColorArgUtil.color_image(args.color_option,
-                                               converted,
-                                               o_img,
-                                               large_char_bound)
+    color_converted, color_blocks, p_cs = ColorArgUtil.color_image(args.color_option,
+                                                                   converted,
+                                                                   o_img,
+                                                                   large_char_bound)
     if color_converted is not None:
         converted = color_converted
 
     if args.invert_color:
+        color_blocks = invert_image(color_blocks)
         converted = invert_image(converted)
+
     cv2.imwrite(args.save_path, converted)
 
     if args.save_chars:
-        ascii_writer = AsciiWriter(p_cts, int(converted.shape[:2][1]/large_char_bound[0]), args.save_chars_path)
+        reassign_positional_colors(p_cs, color_blocks)
+        ascii_writer = AsciiWriter(p_cts,
+                                   p_cs,
+                                   int(converted.shape[:2][1]/large_char_bound[0]),
+                                   args.save_chars_path)
         ascii_writer.save()
 
     elapsed = time.perf_counter() - start

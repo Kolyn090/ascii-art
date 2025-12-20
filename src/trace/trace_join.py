@@ -17,6 +17,7 @@ from writer import Writer, PositionalCharTemplate  # type: ignore
 from arg_util import TraceArgUtil, ShadeArgUtil, ColorArgUtil  # type: ignore
 from palette_template import PaletteTemplate  # type: ignore
 from ascii_writer import AsciiWriter  # type: ignore
+from color_util import PositionalColor, reassign_positional_colors  # type: ignore
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../shade')))
 from gradient_writer import GradientWriter  # type: ignore
@@ -78,30 +79,46 @@ def main():
                 contrast_factor=args.contrast_factor,
                 contrast_window_size=args.contrast_window_size,
                 invert_color=True)
-    t1, ct1, p_ct1 = trace(c1, template, img, args)
-    t2, _, p_ct2 = trace(c2, template, img, args)
+    t1, ct1, p_ct1, p_c1, color_blocks1 = trace(c1, template, img, args)
+    t2, _, p_ct2, p_c2, color_blocks2 = trace(c2, template, img, args)
 
     converted = t2.copy()
     mask = np.all(ct1[..., :3] < 255, axis=2)
     converted[mask, :3] = t1[mask, :3]
 
+    gradient_writer = GradientWriter([template], args.max_workers)
+    p_cts, p_cs = stack(p_ct1, p_ct2, p_c1, p_c2, gradient_writer)
+
     if args.invert_color:
+        color_blocks1 = invert_image(color_blocks1)
         converted = invert_image(converted)
 
     cv2.imwrite(args.save_path, converted)
 
-    gradient_writer = GradientWriter([template], args.max_workers)
-    p_cts = gradient_writer._stack([p_ct1, p_ct2])
-
     if args.save_chars:
-        ascii_writer = AsciiWriter(p_cts, int(converted.shape[:2][1]/template.char_bound[0]), args.save_chars_path)
+        reassign_positional_colors(p_cs, color_blocks1)
+        ascii_writer = AsciiWriter(p_cts,
+                                   p_cs,
+                                   int(converted.shape[:2][1]/template.char_bound[0]),
+                                   args.save_chars_path)
         ascii_writer.save()
 
     elapsed = time.perf_counter() - start
     print(f"Completed: spent {elapsed:.6f} seconds")
 
+def stack(p_ct1: list[PositionalCharTemplate],
+          p_ct2: list[PositionalCharTemplate],
+          p_c1: list[PositionalColor],
+          p_c2: list[PositionalColor],
+          gradient_writer: GradientWriter) \
+        -> tuple[list[PositionalCharTemplate], list[PositionalColor]]:
+    p_cts = gradient_writer._stack([p_ct1, p_ct2])
+    p_cs = p_c1  # p_c1 and p_c2 are the same, just choose one
+    return p_cts, p_cs
+
 def trace(contour_img: np.ndarray, template: PaletteTemplate,
-          original_img: np.ndarray, args) -> tuple[np.ndarray, np.ndarray, list[PositionalCharTemplate]]:
+          original_img: np.ndarray, args) \
+        -> tuple[np.ndarray, np.ndarray, list[PositionalCharTemplate], list[PositionalColor], np.ndarray]:
     contour_img = TraceArgUtil.resize(args.resize_method, contour_img, args.resize_factor)
     h, w = contour_img.shape[:2]
     slicer = Slicer(args.max_workers)
@@ -117,15 +134,15 @@ def trace(contour_img: np.ndarray, template: PaletteTemplate,
     original_img = original_img[0:math.floor(h / char_bound_height) * char_bound_height,
                                 0:math.floor(w / char_bound_width) * char_bound_width]
 
-    color_converted = ColorArgUtil.color_image(args.color_option,
-                                               converted,
-                                               original_img,
-                                               (char_bound_width, char_bound_height),
-                                               invert_ascii=True)
+    color_converted, color_blocks, p_cs = ColorArgUtil.color_image(args.color_option,
+                                                                   converted,
+                                                                   original_img,
+                                                                   (char_bound_width, char_bound_height),
+                                                                   invert_ascii=True)
 
     if color_converted is not None:
         converted = color_converted
-    return converted, converted_copy, p_cts
+    return converted, converted_copy, p_cts, p_cs, color_blocks
 
 if __name__ == '__main__':
     main()

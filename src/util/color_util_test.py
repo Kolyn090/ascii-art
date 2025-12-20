@@ -12,7 +12,7 @@ def test_color():
     color_img = img.copy()
     color_img = resize_nearest_neighbor(color_img, resize_factor)
     cell_size = (13, 22)
-    color_converted = process_image_blocks(color_img, cell_size, average_color_block)
+    color_converted = process_image_blocks(color_img, cell_size, average_color_block)[0]
 
     ascii_img = img.copy()
     ascii_img = resize_bilinear(ascii_img, resize_factor)
@@ -35,7 +35,7 @@ def test_average_color_block():
     img = cv2.imread('../../resource/imgs/tsunami.jpg')
     img = resize_nearest_neighbor(img, resize_factor)
     cell_size = (13, 22)
-    processed = process_image_blocks(img, cell_size, average_color_block)
+    processed = process_image_blocks(img, cell_size, average_color_block)[0]
     os.makedirs('test', exist_ok=True)
     cv2.imwrite("test/test.png", processed)
 
