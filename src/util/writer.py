@@ -29,6 +29,9 @@ class PositionalCharTemplate:
         self.char_template = char_template
         self.top_left = top_left
 
+    def __str__(self):
+        return f"{{'{self.char_template.char}'{self.top_left}}}"
+
 class Writer:
     def __init__(self,
                  imageFont: FreeTypeFont,
@@ -67,8 +70,8 @@ class Writer:
                     w: int, h: int) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
         result_img = np.zeros((h, w, 3), dtype=np.uint8)
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            templates = list(executor.map(lambda cell: self._paste_to_img(cell, result_img), cells))
-        return result_img, templates
+            char_templates = list(executor.map(lambda cell: self._paste_to_img(cell, result_img), cells))
+        return result_img, char_templates
 
     def _paste_to_img(self, cell: Cell, result_img: np.ndarray) -> PositionalCharTemplate:
         """

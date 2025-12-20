@@ -36,6 +36,8 @@ python edge_gradient.py --image_path ../../resource/imgs/tsunami.jpg --resize_fa
 | --gx               | The image gradient in the horizontal edges.                                                                               |
 | --gy               | The image gradient in the vertical edges.                                                                                 |
 | --color_option     | The option to color the image. Check below for available options.                                                         |
+| --save_chars       | If included, the characters will be saved to a file.                                                                      |
+| --save_chars_path  | The path to save the characters.                                                                                          |
 
 **resize_method**
 

@@ -25,7 +25,7 @@ class GradientWriter:
     def assign_gradient_imgs(self, img_gray: np.ndarray, thresholds_gamma: float):
         self.gradient_imgs = divide(img_gray, len(self.templates), thresholds_gamma)
 
-    def match(self, w: int, h: int) -> np.ndarray:
+    def match(self, w: int, h: int) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
         p_ct_lists: list[list[PositionalCharTemplate]] = []
         for i in range(len(self.templates)):
             template = self.templates[i]
@@ -47,7 +47,7 @@ class GradientWriter:
         large_char_bound = self.get_large_char_bound()
         result_img = result_img[0:math.floor(h / large_char_bound[1]) * large_char_bound[1],
                                 0:math.floor(w / large_char_bound[0]) * large_char_bound[0]]
-        return result_img
+        return result_img, stacks
 
     def get_large_char_bound(self) -> tuple[int, int]:
         result_width = 0

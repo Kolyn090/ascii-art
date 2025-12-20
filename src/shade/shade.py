@@ -12,6 +12,7 @@ from writer import Writer  # type: ignore
 from static import (resize_nearest_neighbor, resize_bilinear, invert_image,   # type: ignore
                     floor_fill, increase_contrast, to_grayscale, smooth_colors)  # type: ignore
 from arg_util import ShadeArgUtil, ColorArgUtil, TraceArgUtil  # type: ignore
+from ascii_writer import AsciiWriter  # type: ignore
 
 def main():
     start = time.perf_counter()
@@ -29,6 +30,8 @@ def main():
     parser.add_argument('--max_workers', type=int, default=16)
     parser.add_argument('--invert_color', action='store_true')
     parser.add_argument('--color_option', type=str, default='')
+    parser.add_argument('--save_chars', action='store_true')
+    parser.add_argument('--save_chars_path', type=str, default='./')
 
     args = parser.parse_args()
 
@@ -43,7 +46,7 @@ def main():
 
     gradient_writer = GradientWriter(templates, args.max_workers)
     gradient_writer.assign_gradient_imgs(img, args.thresholds_gamma)
-    converted = gradient_writer.match(w, h)
+    converted, p_cts = gradient_writer.match(w, h)
 
     large_char_bound = gradient_writer.get_large_char_bound()
     color_converted = ColorArgUtil.color_image(args.color_option,
@@ -56,6 +59,10 @@ def main():
     if args.invert_color:
         converted = invert_image(converted)
     cv2.imwrite(args.save_path, converted)
+
+    if args.save_chars:
+        ascii_writer = AsciiWriter(p_cts, int(converted.shape[:2][1]/large_char_bound[0]), args.save_chars_path)
+        ascii_writer.save()
 
     elapsed = time.perf_counter() - start
     print(f"Completed: spent {elapsed:.6f} seconds")
