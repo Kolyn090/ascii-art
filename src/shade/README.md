@@ -32,8 +32,8 @@ python shade.py --image_path ../../resource/imgs/monalisa.jpg --resize_factor 8
 | --max_workers      | The maximum number of multithread workers.                                                                                |
 | --invert_color     | If included, invert the color of the result image.                                                                        |
 | --color_option     | The option to color the image. Check below for available options.                                                         |
-| --save_chars       | If included, the characters will be saved to a file.                                                                      |
-| --save_chars_path  | The path to save the characters. Check out the 'f_output' folder for the results.                                         |
+| --save_ascii       | If included, the characters will be saved to a file.                                                                      |
+| --save_ascii_path  | The path to save the characters. Check out the 'ascii_output' folder for the results.                                         |
 
 **resize_method**
 

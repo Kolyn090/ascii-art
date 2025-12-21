@@ -20,13 +20,13 @@ def test_char_templates():
     writer = template.create_writer(max_workers)
     for char_template in writer.char_templates:
         char = char_template.char
-        template = char_template.template
+        template = char_template.img
         print(char)
         save_path = os.path.join(save_folder, f'char_{ord(char)}.png')
         if save_to_folder:
             cv2.imwrite(save_path, template)
-            cv2.imwrite(os.path.join(save_folder, f'bin_{ord(char)}.png'), char_template.template_binary)
-            cv2.imwrite(os.path.join(save_folder, f'small_{ord(char)}.png'), char_template.template_small)
+            cv2.imwrite(os.path.join(save_folder, f'bin_{ord(char)}.png'), char_template.img_binary)
+            cv2.imwrite(os.path.join(save_folder, f'small_{ord(char)}.png'), char_template.img_small)
 
 def test_match_cells():
     templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_single.json')

@@ -5,14 +5,14 @@ class PaletteTemplate:
     def __init__(self,
                  layer: int,
                  chars: list[str],
-                 imageFont: FreeTypeFont,
+                 image_font: FreeTypeFont,
                  char_bound: tuple[int, int],
                  approx_ratio: float,
                  vector_top_k: int,
                  match_method: str):
         self.layer = layer
         self.chars = chars
-        self.imageFont = imageFont
+        self.image_font = image_font
         self.char_bound = char_bound
         self.approx_ratio = approx_ratio
         self.vector_top_k = vector_top_k
@@ -20,7 +20,7 @@ class PaletteTemplate:
 
     def create_writer(self, max_workers: int) -> Writer:
         return Writer(
-            imageFont=self.imageFont,
+            image_font=self.image_font,
             max_workers=max_workers,
             char_bound=self.char_bound,
             approx_ratio=self.approx_ratio,
@@ -32,7 +32,7 @@ class PaletteTemplate:
     def __str__(self):
         chars = "".join(self.chars)
         return (f"Layer: {self.layer}, "
-                f"Font: {self.imageFont.getname()}, "
+                f"Font: {self.image_font.getname()}, "
                 f"Character Bound: {self.char_bound}, "
                 f"Approximate Ratio: {self.approx_ratio}, "
                 f"Vector Top K: {self.vector_top_k}, "

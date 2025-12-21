@@ -148,5 +148,5 @@ ii:;   -ii ..i^  i!ii-ii~=+i-.          ; !   *%&&&&&&$@@@@@WW&%%%&[[**iiiii*l[&
 python shade.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --resize_factor 4 ^
---save_chars
+--save_ascii
 ```

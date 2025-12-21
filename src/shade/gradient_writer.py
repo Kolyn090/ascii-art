@@ -20,7 +20,7 @@ class GradientWriter:
         self.templates = templates
         self.max_workers = max_workers
         self.gradient_imgs: list[np.ndarray] = []
-        self.template_rank: dict[str, int] = dict()
+        self.char_rank: dict[str, int] = dict()
 
     def assign_gradient_imgs(self, img_gray: np.ndarray, thresholds_gamma: float):
         self.gradient_imgs = divide(img_gray, len(self.templates), thresholds_gamma)
@@ -74,7 +74,7 @@ class GradientWriter:
 
     @staticmethod
     def _paste_to_img(p_ct: PositionalCharTemplate, result_img: np.ndarray):
-        template = p_ct.char_template.template
+        template = p_ct.char_template.img
         top_left = p_ct.top_left
         bottom_right_y = top_left[1] + template.shape[0]
         bottom_right_x = top_left[0] + template.shape[1]
@@ -115,13 +115,13 @@ class GradientWriter:
         :return: Return True if tc1 has lower rank in templates.
         Otherwise, False.
         """
-        return self.template_rank[tc1] > self.template_rank[tc2]
+        return self.char_rank[tc1] > self.char_rank[tc2]
 
     def _assign_template_rank(self):
         count = 0
         for template in self.templates:
             for char in template.chars:
-                self.template_rank[char] = count
+                self.char_rank[char] = count
                 count += 1
         # Force space to have the guaranteed highest rank
-        self.template_rank[" "] = -1
+        self.char_rank[" "] = -1

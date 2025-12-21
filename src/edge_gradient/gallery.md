@@ -154,5 +154,5 @@ python edge_gradient.py ^
 --resize_factor 4 ^
 --contrast_factor 1 ^
 --thresholds_gamma 5 ^
---save_chars
+--save_ascii
 ```

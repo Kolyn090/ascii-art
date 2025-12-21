@@ -279,7 +279,7 @@ python trace.py ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
 --match_method slow ^
 --original_image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
---save_chars
+--save_ascii
 ```
 
 ---
@@ -404,7 +404,7 @@ python trace.py ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
 --match_method slow ^
 --original_image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
---save_chars
+--save_ascii
 ```
 
 ---
@@ -538,5 +538,5 @@ python trace_join.py ^
 --resize_method nearest_neighbor ^
 --match_method slow ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
---save_chars
+--save_ascii
 ```

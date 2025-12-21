@@ -10,10 +10,10 @@ from gradient_writer import GradientWriter  # type: ignore
 class PositionalColor:
     def __init__(self, color: np.ndarray, position: tuple[int, int]):
         self.color = color
-        self.position = position
+        self.top_left = position
 
     def __str__(self):
-        return f"{{{self.color}{self.position}}}"
+        return f"{{{self.color}{self.top_left}}}"
 
 def blend_ascii_with_color(ascii_img: np.ndarray,
                            color_img: np.ndarray,
@@ -77,8 +77,8 @@ def average_color_block(block: np.ndarray) -> np.ndarray:
     return np.tile(avg_color, (block.shape[0], block.shape[1], 1)).astype(block.dtype)
 
 def reassign_positional_colors(p_cs: list[PositionalColor], img: np.ndarray):
-    p_cs.sort(key=lambda positional_color: positional_color.position)
+    p_cs.sort(key=lambda positional_color: positional_color.top_left)
     for p_c in p_cs:
-        x = p_c.position[0]
-        y = p_c.position[1]
+        x = p_c.top_left[0]
+        y = p_c.top_left[1]
         p_c.color = img[y, x]

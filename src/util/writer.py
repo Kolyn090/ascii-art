@@ -12,15 +12,19 @@ from static import to_binary_strong
 class CharTemplate:
     def __init__(self,
                  char: str,
-                 template: np.ndarray,
-                 template_binary: np.ndarray,
-                 template_small: np.ndarray,
-                 projection: np.ndarray):
+                 image_font: FreeTypeFont,
+                 char_bound: tuple[int, int],
+                 img: np.ndarray,
+                 img_binary: np.ndarray,
+                 img_small: np.ndarray,
+                 img_projection: np.ndarray):
         self.char = char
-        self.template = template
-        self.template_binary = template_binary
-        self.template_small = template_small
-        self.projection = projection
+        self.image_font = image_font
+        self.char_bound = char_bound
+        self.img = img
+        self.img_binary = img_binary
+        self.img_small = img_small
+        self.img_projection = img_projection
 
 class PositionalCharTemplate:
     def __init__(self,
@@ -34,14 +38,14 @@ class PositionalCharTemplate:
 
 class Writer:
     def __init__(self,
-                 imageFont: FreeTypeFont,
+                 image_font: FreeTypeFont,
                  max_workers: int,
                  char_bound: tuple[int, int],
                  approx_ratio: float,
                  match_method: str,
                  vector_top_k: int,
                  chars: list[str]):
-        self.imageFont = imageFont
+        self.image_font = image_font
         self.max_workers = max_workers
         self.char_bound = char_bound
         self.approx_ratio = approx_ratio if approx_ratio > 0 else 0.5
@@ -83,7 +87,7 @@ class Writer:
         :return: The most similar template to cell
         """
         most_similar = self.get_most_similar(cell.img)
-        template = most_similar.template
+        template = most_similar.img
         top_left = cell.top_left
         bottom_right_y = top_left[1] + template.shape[0]
         bottom_right_x = top_left[0] + template.shape[1]
@@ -99,6 +103,12 @@ class Writer:
         :param img: The cell img
         :return: The most similar template to cell
         """
+
+        def ensure_gray(image):
+            if len(image.shape) == 3:
+                return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            return image
+
         if len(self.char_templates) == 0:
             raise Exception("You have not assigned any template yet.")
 
@@ -112,10 +122,10 @@ class Writer:
         h, w = img.shape[:2]
 
         for char_template in self.char_templates:
-            template = char_template.template
+            template = char_template.img
             template_resized = cv2.resize(template, (w, h), interpolation=cv2.INTER_NEAREST)
-            img_gray = self._ensure_gray(img)
-            template_gray = self._ensure_gray(template_resized)
+            img_gray = ensure_gray(img)
+            template_gray = ensure_gray(template_resized)
             score = np.sum(img_gray == template_gray) / (w * h)
             if score > best_score:
                 best_score = score
@@ -145,7 +155,7 @@ class Writer:
         h, w = img_bin.shape[:2]
 
         for char_template in self.char_templates:
-            template = char_template.template_binary
+            template = char_template.img_binary
             template_resized = cv2.resize(
                 template, (w, h), interpolation=cv2.INTER_NEAREST
             )
@@ -176,7 +186,7 @@ class Writer:
         best_template = None
 
         for ct in self.char_templates:
-            template_bin = (ct.template_binary > 0)
+            template_bin = (ct.img_binary > 0)
 
             # Boolean comparison + count
             score = np.count_nonzero(img_bin == template_bin) / img_bin.size
@@ -200,7 +210,7 @@ class Writer:
         img_small = cv2.resize(img_bin, self.approx_size, interpolation=cv2.INTER_NEAREST)
         img_feat = img_small.ravel()
 
-        templates_stack = np.stack([ct.projection for ct in self.char_templates])
+        templates_stack = np.stack([ct.img_projection for ct in self.char_templates])
 
         # L1 / Hamming distance (more robust than equality)
         dists = np.sum(np.abs(templates_stack - img_feat), axis=1)
@@ -214,7 +224,7 @@ class Writer:
 
         for idx in top_idx:
             ct = self.char_templates[idx]
-            template_bin = (ct.template_binary > 0)
+            template_bin = (ct.img_binary > 0)
 
             score = np.count_nonzero(img_bin == template_bin) / img_bin.size
 
@@ -224,26 +234,20 @@ class Writer:
 
         return best_template
 
-    @staticmethod
-    def _ensure_gray(img):
-        if len(img.shape) == 3:
-            return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        return img
-
     def _assign_char_templates(self, chars: list[str]):
         result = []
         for char in chars:
-            char_template = self._create_char_template(char, self.imageFont)
+            char_template = self._create_char_template(char, self.image_font)
             result.append(char_template)
         self.char_templates = result
-        self.space_template = self._create_char_template(" ", self.imageFont)
+        self.space_template = self._create_char_template(" ", self.image_font)
 
-    def _create_char_template(self, char: str, imageFont: ImageFont) -> CharTemplate:
+    def _create_char_template(self, char: str, image_font: ImageFont) -> CharTemplate:
         self.approx_size = (math.floor(self.char_bound[0] * self.approx_ratio),
                             math.floor(self.char_bound[1] * self.approx_ratio))
         img = Image.new("RGB", self.char_bound, "white")
         draw = ImageDraw.Draw(img)
-        draw.text((0, 0), char, font=imageFont, fill="black")
+        draw.text((0, 0), char, font=image_font, fill="black")
 
         template = np.array(img)
         template_binary = to_binary_strong(template)
@@ -251,9 +255,11 @@ class Writer:
         template_small = to_binary_strong(template_small)
         char_template = CharTemplate(
             char=char,
-            template=template,
-            template_binary=template_binary,
-            template_small=template_small,
-            projection=template_small.ravel()
+            image_font=self.image_font,
+            char_bound=self.char_bound,
+            img=template,
+            img_binary=template_binary,
+            img_small=template_small,
+            img_projection=template_small.ravel()
         )
         return char_template

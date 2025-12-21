@@ -132,7 +132,7 @@ python trace.py ^
 --match_method slow ^
 --color_option original ^
 --original_image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
---save_chars
+--save_ascii
 ```
 
 ---
@@ -184,8 +184,9 @@ python trace.py ^
 --resize_factor 1 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
 --match_method slow ^
+--color_option original ^
 --original_image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
---save_chars
+--save_ascii
 ```
 
 ---

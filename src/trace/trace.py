@@ -50,8 +50,8 @@ def main():
     # vector_top_k
     # match_method
     parser.add_argument('--palette_path', type=str, default='')
-    parser.add_argument('--save_chars', action='store_true')
-    parser.add_argument('--save_chars_path', type=str, default='./')
+    parser.add_argument('--save_ascii', action='store_true')
+    parser.add_argument('--save_ascii_path', type=str, default='./')
 
     args = parser.parse_args()
     template = assemble_template(args)
@@ -91,12 +91,12 @@ def main():
 
     cv2.imwrite(args.save_path, converted)
 
-    if args.save_chars:
+    if args.save_ascii:
         reassign_positional_colors(p_cs, color_blocks)
         ascii_writer = AsciiWriter(p_cts,
                                    p_cs,
                                    int(converted.shape[:2][1]/char_bound_width),
-                                   args.save_chars_path)
+                                   args.save_ascii_path)
         ascii_writer.save()
 
     elapsed = time.perf_counter() - start
@@ -111,7 +111,7 @@ def assemble_template(args) -> PaletteTemplate | None:
         template = PaletteTemplate(
             layer=0,
             chars=TraceArgUtil.get_chars(args.chars, args.chars_file_path),
-            imageFont=ImageFont.truetype(args.font, args.font_size),
+            image_font=ImageFont.truetype(args.image_font, args.font_size),
             char_bound=(args.char_bound_width, args.char_bound_height),
             approx_ratio=args.approx_ratio,
             vector_top_k=args.vector_top_k,

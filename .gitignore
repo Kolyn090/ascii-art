@@ -210,7 +210,7 @@ __marimo__/
 
 jx_files
 f_input
-f_output
+ascii_output
 sliced
 binary
 chars

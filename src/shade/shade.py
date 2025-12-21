@@ -31,8 +31,8 @@ def main():
     parser.add_argument('--max_workers', type=int, default=16)
     parser.add_argument('--invert_color', action='store_true')
     parser.add_argument('--color_option', type=str, default='')
-    parser.add_argument('--save_chars', action='store_true')
-    parser.add_argument('--save_chars_path', type=str, default='./')
+    parser.add_argument('--save_ascii', action='store_true')
+    parser.add_argument('--save_ascii_path', type=str, default='./')
 
     args = parser.parse_args()
 
@@ -67,12 +67,12 @@ def main():
 
     cv2.imwrite(args.save_path, converted)
 
-    if args.save_chars:
+    if args.save_ascii:
         reassign_positional_colors(p_cs, color_blocks)
         ascii_writer = AsciiWriter(p_cts,
                                    p_cs,
                                    int(converted.shape[:2][1]/large_char_bound[0]),
-                                   args.save_chars_path)
+                                   args.save_ascii_path)
         ascii_writer.save()
 
     elapsed = time.perf_counter() - start
