@@ -39,7 +39,6 @@ class AsciiWriter:
         self.color_file = 'color.txt'
         self.pos_file = 'position.txt'
         self.font_file = 'font.txt'
-        self.font_table_split = "<><>"
 
     def save(self):
         if not os.path.exists(self.save_path):
@@ -113,15 +112,13 @@ class AsciiWriter:
     def _save_font(self, font_path: str):
         font_table, font_2d_indices = self._get_2d_font_table()
         result = []
-        # 1. Save the font table in the first line
-        line1 = []
+        # 1. Save the font table
         for font_ess, index in font_table.items():
-            line1.append(f"{str(font_ess)}: {index}")
-        result.append(self.font_table_split.join(line1))
+            result.append(f"font: {str(font_ess)}: {index}")
 
         # 2. Save the indices
         for row in font_2d_indices:
-            result.append("".join([str(item) for item in row]))
+            result.append(",".join([str(item) for item in row]))
         with open(font_path, "w", encoding="utf-8") as f:
             for row in result:
                 f.write("".join(row) + "\n")
