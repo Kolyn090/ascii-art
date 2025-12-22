@@ -5,7 +5,7 @@ from slicer import Slicer
 from arg_util import ShadeArgUtil, TraceArgUtil
 
 def test_char_templates():
-    templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_single.json')
+    templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/jx_files/palette_single.json')
     template = templates[0]
     chars = TraceArgUtil.get_chars('ascii')
     template.chars = chars
@@ -29,7 +29,7 @@ def test_char_templates():
             cv2.imwrite(os.path.join(save_folder, f'small_{ord(char)}.png'), char_template.img_small)
 
 def test_match_cells():
-    templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_single.json')
+    templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/jx_files/palette_single.json')
     template = templates[0]
     chars = TraceArgUtil.get_chars('ascii')
     template.chars = chars

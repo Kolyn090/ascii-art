@@ -55,7 +55,7 @@ def shade():
 
 def main():
     create_image()
-    trace()
+    # trace()
     # shade()
 
 def create_image():
@@ -64,7 +64,8 @@ def create_image():
     start = (10, -10)
     bound = (806, 616)
     word = "STAR\nWARS"
-    font_path = "C:/Windows/Fonts/ariblk.ttf"
+    # font_path = "C:/Windows/Fonts/ariblk.ttf"
+    font_path = "C:/Windows/Fonts/segoeui.ttf"
     font_size = 240
     font = ImageFont.truetype(font_path, font_size)
 
