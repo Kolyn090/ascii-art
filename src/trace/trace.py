@@ -71,8 +71,9 @@ def main():
     converted = invert_image(converted)
 
     original_img = get_original_image(args)
-    original_img = original_img[0:math.floor(h / char_bound_height) * char_bound_height,
-                                0:math.floor(w / char_bound_width) * char_bound_width]
+    if original_img is not None:
+        original_img = original_img[0:math.floor(h / char_bound_height) * char_bound_height,
+                                    0:math.floor(w / char_bound_width) * char_bound_width]
 
     color_result = ColorArgUtil.color_image(args.color_option,
                                             converted,
@@ -111,7 +112,7 @@ def assemble_template(args) -> PaletteTemplate | None:
         template = PaletteTemplate(
             layer=0,
             chars=TraceArgUtil.get_chars(args.chars, args.chars_file_path),
-            image_font=ImageFont.truetype(args.image_font, args.font_size),
+            image_font=ImageFont.truetype(args.font, args.font_size),
             char_bound=(args.char_bound_width, args.char_bound_height),
             approx_ratio=args.approx_ratio,
             vector_top_k=args.vector_top_k,
