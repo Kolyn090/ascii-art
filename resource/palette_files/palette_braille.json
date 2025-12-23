@@ -10,7 +10,9 @@
       "char_bound_height": 28,
       "approx_ratio": 1,
       "vector_top_k": 5,
-      "match_method": "fast"
+      "match_method": "fast",
+      "gap_horizontal": 0,
+      "gap_vertical": 0
     }
   ]
 }

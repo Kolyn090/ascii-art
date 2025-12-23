@@ -10,7 +10,9 @@
       "char_bound_height": 28,
       "approx_ratio": 1,
       "vector_top_k": 5,
-      "match_method": "fast"
+      "match_method": "fast",
+      "gap_horizontal": 0,
+      "gap_vertical": 0
     },
     {
       "layer": 1,
@@ -21,7 +23,9 @@
       "char_bound_height": 28,
       "approx_ratio": 1,
       "vector_top_k": 5,
-      "match_method": "fast"
+      "match_method": "fast",
+      "gap_horizontal": 0,
+      "gap_vertical": 0
     },
     {
       "layer": 2,
@@ -32,7 +36,9 @@
       "char_bound_height": 28,
       "approx_ratio": 1,
       "vector_top_k": 5,
-      "match_method": "fast"
+      "match_method": "fast",
+      "gap_horizontal": 0,
+      "gap_vertical": 0
     },
     {
       "layer": 3,
@@ -43,7 +49,9 @@
       "char_bound_height": 28,
       "approx_ratio": 1,
       "vector_top_k": 5,
-      "match_method": "fast"
+      "match_method": "fast",
+      "gap_horizontal": 0,
+      "gap_vertical": 0
     },
     {
       "layer": 4,
@@ -54,7 +62,9 @@
       "char_bound_height": 28,
       "approx_ratio": 1,
       "vector_top_k": 5,
-      "match_method": "fast"
+      "match_method": "fast",
+      "gap_horizontal": 0,
+      "gap_vertical": 0
     }
   ]
 }
