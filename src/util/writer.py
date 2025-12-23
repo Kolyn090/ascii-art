@@ -224,18 +224,7 @@ class Writer:
                             math.floor(char_bound[1] * self.approx_ratio))
         img = Image.new("RGB", char_bound, "white")
         draw = ImageDraw.Draw(img)
-
-        # Get text bounding box
-        bbox = draw.textbbox((0, 0), char, font=self.image_font)
-
-        text_w = bbox[2] - bbox[0]
-
-        img_w, img_h = img.size
-
-        # Center horizontally
-        x = (img_w - text_w) // 2
-
-        draw.text((x, 0), char, font=self.image_font, fill="black")
+        draw.text((0, 0), char, font=self.image_font, fill="black")
 
         template = np.array(img)
         template_binary = to_binary_strong(template)
