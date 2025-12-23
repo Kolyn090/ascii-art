@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-from writer import PositionalCharTemplate, CharTemplate
+from char_template import PositionalCharTemplate, CharTemplate
 from color_util import PositionalColor
 
 class FontEssential:
