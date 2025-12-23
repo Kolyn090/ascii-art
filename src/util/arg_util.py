@@ -44,6 +44,10 @@ class ShadeArgUtil:
     @staticmethod
     def get_palette_json(file_path: str) -> list[PaletteTemplate]:
         def parse_template(obj: dict) -> PaletteTemplate:
+            override_widths = None
+            if "override_widths" in obj:
+                override_widths = obj["override_widths"]
+
             return PaletteTemplate(
                 obj["layer"],
                 list(dict.fromkeys(c for c in obj["chars"] if c != '\n')),
@@ -51,7 +55,8 @@ class ShadeArgUtil:
                 (obj["char_bound_width"], obj["char_bound_height"]),
                 obj["approx_ratio"],
                 obj["vector_top_k"],
-                obj["match_method"]
+                obj["match_method"],
+                override_widths
             )
 
         result = []

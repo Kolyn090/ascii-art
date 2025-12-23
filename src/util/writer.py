@@ -44,7 +44,8 @@ class Writer:
                  approx_ratio: float,
                  match_method: str,
                  vector_top_k: int,
-                 chars: list[str]):
+                 chars: list[str],
+                 override_widths: dict[str, int] | None = None):
         self.image_font = image_font
         self.max_workers = max_workers
         self.char_bound = char_bound
@@ -55,6 +56,7 @@ class Writer:
         self.char_templates: list[CharTemplate] = []
         self.space_template = None
         self.approx_size = (7, 12)
+        self.override_widths = override_widths
 
         self._assign_char_templates(chars)
 
@@ -243,9 +245,10 @@ class Writer:
         self.space_template = self._create_char_template(" ")
 
     def _create_char_template(self, char: str) -> CharTemplate:
-        self.approx_size = (math.floor(self.char_bound[0] * self.approx_ratio),
-                            math.floor(self.char_bound[1] * self.approx_ratio))
-        img = Image.new("RGB", self.char_bound, "white")
+        char_bound = self._get_char_bound(char)
+        self.approx_size = (math.floor(char_bound[0] * self.approx_ratio),
+                            math.floor(char_bound[1] * self.approx_ratio))
+        img = Image.new("RGB", char_bound, "white")
         draw = ImageDraw.Draw(img)
         draw.text((0, 0), char, font=self.image_font, fill="black")
 
@@ -256,10 +259,15 @@ class Writer:
         char_template = CharTemplate(
             char=char,
             image_font=self.image_font,
-            char_bound=self.char_bound,
+            char_bound=char_bound,
             img=template,
             img_binary=template_binary,
             img_small=template_small,
             img_projection=template_small.ravel()
         )
         return char_template
+
+    def _get_char_bound(self, char: str) -> tuple[int, int]:
+        if self.override_widths is not None and char in self.override_widths:
+            return self.override_widths[char], self.char_bound[1]
+        return self.char_bound

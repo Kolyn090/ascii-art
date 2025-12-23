@@ -9,7 +9,8 @@ class PaletteTemplate:
                  char_bound: tuple[int, int],
                  approx_ratio: float,
                  vector_top_k: int,
-                 match_method: str):
+                 match_method: str,
+                 override_widths: dict[str, int] | None = None):
         self.layer = layer
         self.chars = chars
         self.image_font = image_font
@@ -17,6 +18,7 @@ class PaletteTemplate:
         self.approx_ratio = approx_ratio
         self.vector_top_k = vector_top_k
         self.match_method = match_method
+        self.override_widths = override_widths
 
     def create_writer(self, max_workers: int) -> Writer:
         return Writer(
@@ -26,7 +28,8 @@ class PaletteTemplate:
             approx_ratio=self.approx_ratio,
             match_method=self.match_method,
             vector_top_k=self.vector_top_k,
-            chars=self.chars
+            chars=self.chars,
+            override_widths=self.override_widths
         )
 
     def __str__(self):
@@ -37,4 +40,5 @@ class PaletteTemplate:
                 f"Approximate Ratio: {self.approx_ratio}, "
                 f"Vector Top K: {self.vector_top_k}, "
                 f"Method: {self.match_method}, "
-                f"Chars: {chars} ")
+                f"Chars: {chars}, "
+                f"Override Widths: {self.override_widths}")
