@@ -74,7 +74,7 @@ class FlowWriter:
         return concatenated
 
     @staticmethod
-    def concat_images_top_to_bottom(images: list[np.ndarray], pad_color=(0, 0, 0)) -> np.ndarray:
+    def concat_images_top_to_bottom(images: list[np.ndarray], pad_color=(255,255,255)) -> np.ndarray:
         """
         Concatenates images vertically. If widths differ, pad them to the max width.
 
