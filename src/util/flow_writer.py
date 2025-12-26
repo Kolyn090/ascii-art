@@ -45,7 +45,7 @@ class FlowWriter:
             reconstructed = self._tile_row(long_img, row_num)
             seq, score = reconstructed
             seqs.extend(seq)
-            seq = [ct.char_template.img for ct in seq]
+            seq = [ct.char_template.img_binary for ct in seq]
             rows.append(self.concat_images_left_to_right(seq))
             row_num += 1
         final_img = self.concat_images_top_to_bottom(rows, pad_color=(255, 255, 255))
@@ -101,7 +101,9 @@ class FlowWriter:
             if img.ndim == 3:  # color image
                 pad_img = np.full((h, max_width, img.shape[2]), pad_color, dtype=img.dtype)
             else:  # grayscale
-                pad_img = np.full((h, max_width), pad_color, dtype=img.dtype)
+                gray_color = pad_color if not isinstance(pad_color, tuple) else pad_color[0]
+                pad_img = np.full((h, max_width),
+                                  gray_color, dtype=img.dtype)
 
             # place image on left, pad on right
             pad_img[:, :w] = img

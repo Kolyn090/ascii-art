@@ -17,9 +17,9 @@ from gradient_divide import divide  # type: ignore
 
 def test():
     max_workers = 16
-    resize_factor = 4
+    resize_factor = 8
     contrast_factor = 1
-    thresholds_gamma = 0.15
+    thresholds_gamma = 0.2
     sigma_s = 1
     sigma_r = 0.6
 
@@ -92,7 +92,7 @@ def stack(layers: list[list[PositionalCharTemplate]],
         print(f"===============y: {y}===================")
         tiling = overlay(row_layers, char_weight, image_width)
         p_cts = [p_ct for p_ct, _, _ in tiling]
-        imgs = [p_ct.char_template.img for p_ct in p_cts]
+        imgs = [p_ct.char_template.img_binary for p_ct in p_cts]
         horizontal = FlowWriter.concat_images_left_to_right(imgs)
         horizontals.append(horizontal)
     final_img = FlowWriter.concat_images_top_to_bottom(horizontals, (255, 255, 255))
@@ -220,6 +220,9 @@ def overlay(row_layers: list[list[PositionalCharTemplate]],
         last_of_best_in_span = last_indices_spanning_short_imgs[best_choice]  # This is index of short image
 
         if last_of_best_in_span == -1:
+            last_of_best_in_span = first_of_best_in_span
+
+        if last_of_best_in_span == -1:
             return result
 
         result.extend(pos_maps[best_choice][first_of_best_in_span : last_of_best_in_span + 1])
@@ -239,6 +242,7 @@ def get_index_start_from_begin(pos_map: list[tuple[PositionalCharTemplate, int, 
             return i
     return -1
 
+# TODO: add something to fill the offset gap
 def apply_offset(pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]],
                  last_indices_spanning_short_imgs: list[int],
                  best_end: int):
@@ -351,7 +355,7 @@ def find_best_offset_choice(
 
 def calculate_choice_score(offset_mse: int, char_weight_sum: int, curr_layer_weight: int) \
     -> float:
-    return char_weight_sum * 5 + curr_layer_weight * 3 - offset_mse
+    return char_weight_sum * 50 + curr_layer_weight * 150 - offset_mse * 10
 
 def calculate_char_weight_sum(char_weight: dict[str, int],
                               pos_map: list[tuple[PositionalCharTemplate, int, int]],
