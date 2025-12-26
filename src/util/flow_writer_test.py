@@ -17,13 +17,13 @@ from gradient_divide import divide  # type: ignore
 
 def test():
     max_workers = 16
-    resize_factor = 4
+    resize_factor = 8
     contrast_factor = 1
-    thresholds_gamma = 0.2
+    thresholds_gamma = 0.15
     sigma_s = 1
     sigma_r = 0.6
 
-    image = cv2.imread("../../resource/imgs/monalisa.jpg")
+    image = cv2.imread("../../resource/f_input/ultraman-nexus.png")
     image = resize_nearest_neighbor(image, resize_factor)
     image = increase_contrast(image, contrast_factor)
     image = smooth_colors(image, sigma_s, sigma_r)
@@ -49,11 +49,13 @@ def test():
         gradient_img = invert_image(gradient_img)
         flow_writer = palette.create_flow_writer(max_workers)
         final_img, p_cts = flow_writer.match(gradient_img)
+        final_img = invert_image(final_img)
         cv2.imwrite(f"jx_files/final_{i}.png", final_img)
         layers.append(p_cts)
 
     char_weight = get_char_weight(palettes)
-    stack(layers, char_weight, resize_factor * image.shape[:2][1])
+    char_weight[' '] = -1000
+    stack_test(layers, char_weight, resize_factor * image.shape[:2][1])
 
 def get_char_weight(palettes: list[PaletteTemplate]) -> dict[str, int]:
     result = dict()
@@ -80,17 +82,12 @@ def stack(layers: list[list[PositionalCharTemplate]],
                 row_table[y].append([])
             row_table[y][i].append(p_ct)
 
-    # row0 = row_table[0]
-    # overlayed = overlay(row0, char_weight, image_width)
-    # for p_ct, s, e in overlayed:
-    #     print(p_ct, s ,e)
-
     print(char_weight)
 
     horizontals = []
     for y, row_layers in row_table.items():
         print(f"===============y: {y}===================")
-        tiling = overlay(row_layers, char_weight, image_width)
+        tiling = stack_overlay(row_layers, char_weight, image_width)
         p_cts = [p_ct for p_ct, _, _ in tiling]
         imgs = [p_ct.char_template.img_binary for p_ct in p_cts]
         horizontal = FlowWriter.concat_images_left_to_right(imgs)
@@ -98,6 +95,40 @@ def stack(layers: list[list[PositionalCharTemplate]],
     final_img = FlowWriter.concat_images_top_to_bottom(horizontals, (255, 255, 255))
     final_img = invert_image(final_img)
     cv2.imwrite("jx_files/final_img.png", final_img)
+
+def stack_test(layers: list[list[PositionalCharTemplate]],
+          char_weight: dict[str, int],
+          image_width: int):
+    row_table: dict[int, list[list[PositionalCharTemplate]]] = dict()
+    for i in range(len(layers)):
+        layer = layers[i]
+        for p_ct in layer:
+            y = p_ct.top_left[1]
+            if y not in row_table:
+                row_table[y] = []
+            if len(row_table[y]) < i+1:
+                row_table[y].append([])
+            row_table[y][i].append(p_ct)
+
+    print(char_weight)
+
+    transitional_horizontals: dict[int, list[np.ndarray]] = {i: [] for i in range(len(layers)-1)}
+    print(len(transitional_horizontals))
+    for y, row_layers in row_table.items():
+        print(f"===============y: {y}===================")
+        tilings = stack_overlay_test(row_layers, char_weight, image_width)  # transitional
+
+        for i in range(len(tilings)):
+            tiling = tilings[i]
+            p_cts = [p_ct for p_ct, _, _ in tiling]
+            imgs = [p_ct.char_template.img_binary for p_ct in p_cts]
+            horizontal = FlowWriter.concat_images_left_to_right(imgs)
+            transitional_horizontals[i].append(horizontal)
+
+    for idx, horizontals in transitional_horizontals.items():
+        final_img = FlowWriter.concat_images_top_to_bottom(horizontals, (255, 255, 255))
+        final_img = invert_image(final_img)
+        cv2.imwrite(f"jx_files/final_img_{idx}.png", final_img)
 
 def merge_nonwhite(images, fill_value=255):
     if not images:
@@ -146,6 +177,51 @@ def build_position_maps(row_layers: list[list[PositionalCharTemplate]]) \
             intervals.append((p_ct, curr, curr + w))
             curr += w
         result.append(intervals)
+    return result
+
+def stack_overlay(row_layers: list[list[PositionalCharTemplate]],
+            char_weight: dict[str, int],
+            image_width: int) \
+        -> list[tuple[PositionalCharTemplate, int, int]]:
+    """
+    Stack overlay is a more advanced way of overlay. Rather than applying overlay to
+    all layers, it first applies to layers 1 and 2 and get output A, then applies to
+    A and 3 and so on...
+    :param row_layers:
+    :param char_weight:
+    :param image_width:
+    :return:
+    """
+    output: list[PositionalCharTemplate] = row_layers[0]
+    result: list[tuple[PositionalCharTemplate, int, int]] = []
+    for i in range(1, len(row_layers)):
+        row_layer = row_layers[i]
+        new_row_layers = [output, row_layer]
+        overlay_result = overlay(new_row_layers, char_weight, image_width)
+        output = [p_ct for p_ct, s, e in overlay_result]
+        result = overlay_result
+
+    if len(result) == 0:
+        result = build_position_maps([output])[0]
+
+    return result
+
+def stack_overlay_test(row_layers: list[list[PositionalCharTemplate]],
+            char_weight: dict[str, int],
+            image_width: int) \
+        -> list[list[tuple[PositionalCharTemplate, int, int]]]:
+    output: list[PositionalCharTemplate] = row_layers[0]
+    result: list[list[tuple[PositionalCharTemplate, int, int]]] = []
+    for i in range(1, len(row_layers)):
+        row_layer = row_layers[i]
+        new_row_layers = [output, row_layer]
+        overlay_result = overlay(new_row_layers, char_weight, image_width)
+        output = [p_ct for p_ct, s, e in overlay_result]
+        result.append(overlay_result)
+
+    if len(result) == 0:
+        result = [build_position_maps([output])[0]]
+
     return result
 
 def overlay(row_layers: list[list[PositionalCharTemplate]],
@@ -321,7 +397,7 @@ def calculate_choice_score(offset_mse: int,
                            curr_layer_weight: int,
                            coherence_score) \
     -> float:
-    return char_weight_sum * 50 + curr_layer_weight * 50 - offset_mse * 10 + coherence_score * 200
+    return char_weight_sum * 50 + curr_layer_weight * 10 - offset_mse * 5 + coherence_score * 50
 
 def calculate_char_weight_sum(char_weight: dict[str, int],
                               pos_map: list[tuple[PositionalCharTemplate, int, int]],
