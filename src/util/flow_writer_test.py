@@ -17,7 +17,7 @@ from gradient_divide import divide  # type: ignore
 
 def test():
     max_workers = 16
-    resize_factor = 8
+    resize_factor = 4
     contrast_factor = 1
     thresholds_gamma = 0.2
     sigma_s = 1
@@ -99,22 +99,6 @@ def stack(layers: list[list[PositionalCharTemplate]],
     final_img = invert_image(final_img)
     cv2.imwrite("jx_files/final_img.png", final_img)
 
-    # count = 0
-    # final_rows = []
-    # for y, row_layers in row_table.items():
-    #     horizontals = []
-    #     for i in range(len(row_layers)):
-    #         p_cts = row_layers[i]
-    #         imgs = [p_ct.char_template.img for p_ct in p_cts]
-    #         horizontal = FlowWriter.concat_images_left_to_right(imgs)
-    #         horizontals.append(horizontal)
-    #     final_row_img = merge_nonwhite(horizontals, 255)
-    #     final_rows.append(final_row_img)
-    #     count += 1
-    # final_img = FlowWriter.concat_images_top_to_bottom(final_rows, (255, 255, 255))
-    # final_img = invert_image(final_img)
-    # cv2.imwrite(f"jx_files/final_img.png", final_img)
-
 def merge_nonwhite(images, fill_value=255):
     if not images:
         raise ValueError("No images given")
@@ -164,38 +148,6 @@ def build_position_maps(row_layers: list[list[PositionalCharTemplate]]) \
         result.append(intervals)
     return result
 
-# def overlay(row_layers: list[list[PositionalCharTemplate]]) \
-#         -> list[tuple[PositionalCharTemplate, int, int]]:
-#     # One row_layer = one long image
-#     pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]] = build_position_maps(row_layers)
-#     pos_map = pos_maps[0]  # Always take everything from the first layer
-#     count = 1
-#     while count < len(pos_maps):
-#         over_layer = pos_maps[count]
-#         start_set = get_start_set(pos_map)
-#         end_set = get_end_set(pos_map)
-#         for p_ct, s, e in over_layer:
-#             if p_ct.char_template.char != ' ' and s in start_set and e in end_set:
-#                 print(p_ct)
-#                 pos_map = replace(pos_map, s, e, p_ct)
-#
-#         count += 1
-#     return pos_map
-#
-# def get_start_set(pos_map: list[tuple[PositionalCharTemplate, int, int]]) -> list[int]:
-#     return [s for _, s, _ in pos_map]
-#
-# def get_end_set(pos_map: list[tuple[PositionalCharTemplate, int, int]]) -> list[int]:
-#     return [e for _, _, e in pos_map]
-#
-# def replace(pos_map: list[tuple[PositionalCharTemplate, int, int]],
-#             start_x: int,
-#             end_x: int,
-#             p_ct: PositionalCharTemplate) -> list[tuple[PositionalCharTemplate, int, int]]:
-#     removed = [tu for tu in pos_map if start_x > tu[1] < end_x]
-#     removed.append((p_ct, start_x, end_x))
-#     return removed
-
 def overlay(row_layers: list[list[PositionalCharTemplate]],
             char_weight: dict[str, int],
             image_width: int) \
@@ -206,16 +158,19 @@ def overlay(row_layers: list[list[PositionalCharTemplate]],
 
     layer_weight = {i: i for i in range(len(row_layers))}
 
+    last_best_choice = -1
     while begin <= image_width:
         len_longest_short_img_from_begin = find_len_longest_short_img_from_begin(pos_maps, begin)
         last_indices_spanning_short_imgs = find_last_indices_spanning_short_imgs(pos_maps,
                                                                                  begin,
                                                                                  len_longest_short_img_from_begin)
         best_choice: int = find_best_offset_choice(pos_maps,
-                                              begin,
-                                              char_weight,
-                                              layer_weight,
-                                              last_indices_spanning_short_imgs)  # This is index of layer
+                                                  begin,
+                                                  char_weight,
+                                                  layer_weight,
+                                                  last_indices_spanning_short_imgs,
+                                                  last_best_choice)  # This is index of layer
+        last_best_choice = best_choice
         first_of_best_in_span = get_index_start_from_begin(pos_maps[best_choice], begin)  # This is index of short image
         last_of_best_in_span = last_indices_spanning_short_imgs[best_choice]  # This is index of short image
 
@@ -225,7 +180,10 @@ def overlay(row_layers: list[list[PositionalCharTemplate]],
         if last_of_best_in_span == -1:
             return result
 
-        result.extend(pos_maps[best_choice][first_of_best_in_span : last_of_best_in_span + 1])
+        # y = pos_maps[best_choice][last_of_best_in_span][0].top_left[1]
+
+        new_extend = pos_maps[best_choice][first_of_best_in_span : last_of_best_in_span + 1]
+        result.extend(new_extend)
 
         best_pos_map = pos_maps[best_choice]
         best_end: int = best_pos_map[last_of_best_in_span][2]
@@ -242,7 +200,6 @@ def get_index_start_from_begin(pos_map: list[tuple[PositionalCharTemplate, int, 
             return i
     return -1
 
-# TODO: add something to fill the offset gap
 def apply_offset(pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]],
                  last_indices_spanning_short_imgs: list[int],
                  best_end: int):
@@ -334,7 +291,8 @@ def find_best_offset_choice(
     begin: int,
     char_weight: dict[str, int],
     layer_weight: dict[int, int],
-    last_indices_spanning_short_imgs: list[int]) -> int:
+    last_indices_spanning_short_imgs: list[int],
+    last_best_choice: int) -> int:
     high_score = -float('inf')
     result = 0
 
@@ -346,16 +304,24 @@ def find_best_offset_choice(
         offset_mse = find_offset_mse(pos_maps, begin, e-begin, last_indices_spanning_short_imgs)
         char_weight_sum = calculate_char_weight_sum(char_weight, pos_map, begin, e-begin)
         curr_layer_weight = layer_weight[i]
-        choice_score = calculate_choice_score(offset_mse, char_weight_sum, curr_layer_weight)
-        # print(math.log2(offset_mse) if offset_mse != 0 else 0, char_weight_sum * 10, curr_layer_weight * 10)
+
+        coherence_score = 1 if last_best_choice == i else 0
+
+        choice_score = calculate_choice_score(offset_mse,
+                                              char_weight_sum,
+                                              curr_layer_weight,
+                                              coherence_score)
         if choice_score > high_score:
             high_score = choice_score
             result = i
     return result
 
-def calculate_choice_score(offset_mse: int, char_weight_sum: int, curr_layer_weight: int) \
+def calculate_choice_score(offset_mse: int,
+                           char_weight_sum: int,
+                           curr_layer_weight: int,
+                           coherence_score) \
     -> float:
-    return char_weight_sum * 50 + curr_layer_weight * 150 - offset_mse * 10
+    return char_weight_sum * 50 + curr_layer_weight * 50 - offset_mse * 10 + coherence_score * 200
 
 def calculate_char_weight_sum(char_weight: dict[str, int],
                               pos_map: list[tuple[PositionalCharTemplate, int, int]],
