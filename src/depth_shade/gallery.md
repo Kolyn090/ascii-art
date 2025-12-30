@@ -1,4 +1,4 @@
-# Gallery (Depth Shae ASCII Filter)
+# Gallery (Depth Shade ASCII Filter)
 
 1️⃣ `cd` to `src/depth_shade`.
 
