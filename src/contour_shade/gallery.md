@@ -1,4 +1,4 @@
-# Gallery (Edge Gradient ASCII Filter)
+# Gallery (Contour Shade ASCII Filter)
 
 1️⃣ `cd` to `src/contour_shade`.
 

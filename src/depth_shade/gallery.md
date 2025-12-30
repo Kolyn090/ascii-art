@@ -1,15 +1,15 @@
-# Gallery (Shae ASCII Filter)
+# Gallery (Depth Shae ASCII Filter)
 
-1️⃣ `cd` to `src/shade`.
+1️⃣ `cd` to `src/depth_shade`.
 
 ---
 
 <p align="center">
-    <img src="../../resource/gallery/shade/gpe_colored.png" width="400">
+    <img src="../../resource/gallery/depth_shade/gpe_colored.png" width="400">
 </p>
 
 ```commandline
-python shade.py ^
+python depth_shade.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --resize_factor 4 ^
 --color_option original
@@ -18,11 +18,11 @@ python shade.py ^
 ---
 
 <p align="center">
-    <img src="../../resource/gallery/shade/gpe_colored_invert.png" width="400">
+    <img src="../../resource/gallery/depth_shade/gpe_colored_invert.png" width="400">
 </p>
 
 ```commandline
-python shade.py ^
+python depth_shade.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --resize_factor 4 ^
 --color_option original ^
@@ -145,7 +145,7 @@ ii:;   -ii ..i^  i!ii-ii~=+i-.          ; !   *%&&&&&&$@@@@@WW&%%%&[[**iiiii*l[&
 ```
 
 ```commandline
-python shade.py ^
+python depth_shade.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --resize_factor 4 ^
 --save_ascii

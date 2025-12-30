@@ -11,7 +11,7 @@
 | ~~Save ASCII~~     | ❌        |
 
 ```commandline
-python shade.py ^
+python depth_shade.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --resize_factor 1
 ```
@@ -31,7 +31,7 @@ python shade.py ^
 | ~~Save ASCII~~     | ❌        |
 
 ```commandline
-python shade.py ^
+python depth_shade.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --resize_factor 1 ^
 --color_option original
@@ -52,7 +52,7 @@ python shade.py ^
 | ~~Save ASCII~~     | ❌        |
 
 ```commandline
-python shade.py ^
+python depth_shade.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --resize_factor 1 ^
 --color_option original ^
@@ -74,7 +74,7 @@ python shade.py ^
 | ~~Save ASCII~~     | ❌        |
 
 ```commandline
-python shade.py ^
+python depth_shade.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --resize_factor 1 ^
 --invert_color
@@ -121,7 +121,7 @@ ii***];!.i,_@@@@W%%&&[l&&%*=]l*][+! ,i,
 | Save ASCII             | ✅        |
 
 ```commandline
-python shade.py ^
+python depth_shade.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --resize_factor 1 ^
 --save_ascii

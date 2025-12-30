@@ -9,32 +9,7 @@ from static import (resize_bilinear, invert_image, increase_contrast,  # type: i
 
 
 def divide(img_gray: np.ndarray, n_levels: int, thresholds_gamma: float) -> list[np.ndarray]:
-    # h, w = img_gray.shape
-    #
-    # # 1. Compute gradient magnitude
-    # gx = cv2.Sobel(img_gray, cv2.CV_64F, 1, 0, ksize=3)
-    # gy = cv2.Sobel(img_gray, cv2.CV_64F, 0, 1, ksize=3)
-    # grad_mag = cv2.magnitude(gx, gy)
-    #
-    # # 2. Smooth gradient slightly to avoid sparse zeros
-    # grad_mag = cv2.GaussianBlur(grad_mag, (5, 5), 1.0)
-
-    # 3. Normalize to 0..255
     grad_scaled = img_gray / img_gray.max() * 255.0
-
-    # 4. Even thresholds
-    # step = 255 / n_levels
-    # thresholds = [i * step for i in range(n_levels + 1)]
-
-    # n_levels thresholds
-    # linear = np.linspace(0, 1, n_levels + 1)
-
-    # Apply a power >1 to bias toward high values
-    # gamma = 2.5  # higher gamma -> more emphasis on bright pixels
-    # nonlinear = linear ** gamma
-    #
-    # # Scale to 0..255
-    # thresholds = nonlinear * 255
     thresholds = compute_equal_pixel_thresholds(img_gray, n_levels, thresholds_gamma)
     print(f"Gradient Thresholds: {thresholds}")
 
@@ -46,18 +21,6 @@ def divide(img_gray: np.ndarray, n_levels: int, thresholds_gamma: float) -> list
 
         # Mask in scaled gradient
         mask = ((grad_scaled >= lower) & (grad_scaled <= upper)).astype(np.uint8)
-
-        # # Include black / white pixels explicitly
-        # if i == 0:
-        #     mask |= (img_gray == 0)
-        # if i == n_levels - 1:
-        #     mask |= (img_gray == 255)
-
-        # Create RGBA: white background + alpha mask
-        # rgb = np.ones((h, w, 3), dtype=np.uint8) * 255
-        # alpha = np.zeros((h, w), dtype=np.uint8)
-        # alpha[mask > 0] = 255
-
         # level_img = np.dstack([rgb, alpha])
         level_img = cv2.bitwise_and(img_gray, img_gray, mask=mask)
         level_img[level_img > 0] = 255

@@ -1,19 +1,19 @@
-# Shade ASCII Filter
+# Depth Shade ASCII Filter
 
 The shade filter renders the image with shading.
 Unlike in the trace filter, where palette is optional,
 shade filter requires you to set up a palette. 
 
-## 📖 Guide: Shade ASCII Art
-1️⃣ `cd` to `src/shade`.
+## 📖 Guide: Depth Shade ASCII Art
+1️⃣ `cd` to `src/depth_shade`.
 
 2️⃣ Set up a palette. Recommended save directory is `resource/palette_files`.
 Check out the [palette tutorial](../../palette_tut.md).
 
-3️⃣ Execute `shade.py`.
+3️⃣ Execute `depth_shade.py`.
 **Example**:
 ```commandline
-python shade.py --image_path ../../resource/imgs/monalisa.jpg --resize_factor 8
+python depth_shade.py --image_path ../../resource/imgs/monalisa.jpg --resize_factor 8
 ```
 
 **Parameters**
