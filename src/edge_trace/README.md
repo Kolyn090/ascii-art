@@ -1,4 +1,4 @@
-# Trace ASCII Filter
+# Edge Trace ASCII Filter
 
 The trace image filter includes two steps. The first step generates
 the contour images. You will choose one contour image that you want
@@ -6,7 +6,7 @@ to use for the next step. The second step generates the Trace ASCII
 Art. The following guides describes the process.
 
 ## 📖 Guide 1: Draw Image Contour
-1️⃣ `cd` to `src/trace`.
+1️⃣ `cd` to `src/edge_trace`.
 
 2️⃣ Execute `contour.py`.
 **Example**:
@@ -48,23 +48,23 @@ An example of contour image:
 
 ---
 
-## 📖 Guide 2: Trace ASCII Art
-1️⃣ `cd` to `src/trace`.
+## 📖 Guide 2: Edge Trace ASCII Art
+1️⃣ `cd` to `src/edge_trace`.
 
-2️⃣ Execute `trace.py`.
+2️⃣ Execute `edge_trace.py`.
 **Example**:
 ```commandline
-python trace.py --image_path ./contour/contour_180_260.png --resize_factor 8 --chars file --font C:/Windows/Fonts/consolab.ttf --char_bound_width 13 --char_bound_height 22 --match_method slow 
+python edge_trace.py --image_path ./contour/contour_180_260.png --resize_factor 8 --chars file --font C:/Windows/Fonts/consolab.ttf --char_bound_width 13 --char_bound_height 22 --match_method slow 
 ```
 
 **Japanese Hiragana**:
 ```commandline
-python trace.py --image_path ./contour/contour_240_200.png --resize_factor 8 --chars file --char_bound_height 24 --char_bound_width 22 --font C:/Windows/Fonts/msgothic.ttc --font_size 24 --chars_file_path ../../resource/char_files/chars_file_hiragana.txt --match_method vector --approx_ratio 0.5 --vector_top_k 5 --invert_color
+python edge_trace.py --image_path ./contour/contour_240_200.png --resize_factor 8 --chars file --char_bound_height 24 --char_bound_width 22 --font C:/Windows/Fonts/msgothic.ttc --font_size 24 --chars_file_path ../../resource/char_files/chars_file_hiragana.txt --match_method vector --approx_ratio 0.5 --vector_top_k 5 --invert_color
 ```
 
 **An Example using Palette file**, Check out the [palette tutorial](../../palette_tut.md) if you would like to make your own palette:
 ```commandline
-python trace.py --image_path ./contour/contour_180_260.png --resize_factor 8 --palette_path ../../resource/palette_files/palette_chars.json --match_method slow
+python edge_trace.py --image_path ./contour/contour_180_260.png --resize_factor 8 --palette_path ../../resource/palette_files/palette_chars.json --match_method slow
 ```
 
 **Parameters**
@@ -90,7 +90,7 @@ python trace.py --image_path ./contour/contour_180_260.png --resize_factor 8 --p
 | --color_option        | The option to color the image. Check below for available options.                                                      |
 | --original_image_path | REQUIRED if you are doing `color_option=original`.                                                                     |
 | --save_ascii          | If included, the characters will be saved to a file.                                                                   |
-| --save_ascii_path     | The path to save the characters. Check out the 'ascii_output' folder for the results.                                      |
+| --save_ascii_path     | The path to save the characters. Check out the 'ascii_output' folder for the results.                                  |
 
 **resize_method**
 
@@ -129,15 +129,15 @@ An example of ascii art image:
 
 ---
 
-## 📕 Extra Guide: Join-Trace ASCII Art
+## 📕 Extra Guide: Joined-Trace ASCII Art
 
-1️⃣ `cd` to `src/trace`.
+1️⃣ `cd` to `src/edge_trace`.
 
-2️⃣ Execute `trace_join.py`.
+2️⃣ Execute `joined_trace.py`.
 
 **Example**:
 ```commandline
-python trace_join.py ^
+python joined_trace.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --canny1 180 ^
 --canny2 260 ^
@@ -185,7 +185,7 @@ python trace_join.py ^
 | --palette_path         | Use a palette. Only the first template will be used. The values in template can be overridden with explicit arguments. |
 | --color_option         | The option to color the image. Check below for available options.                                                      |
 | --save_ascii           | If included, the characters will be saved to a file.                                                                   |
-| --save_ascii_path      | The path to save the characters. Check out the 'ascii_output' folder for the results.                                      |
+| --save_ascii_path      | The path to save the characters. Check out the 'ascii_output' folder for the results.                                  |
 
 **resize_method**
 

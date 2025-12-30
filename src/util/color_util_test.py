@@ -1,7 +1,7 @@
 from arg_util import ShadeArgUtil
 from color_util import *
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../shade')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../depth_shade')))
 from gradient_writer import GradientWriter  # type: ignore
 
 def test_color():

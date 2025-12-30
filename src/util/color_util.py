@@ -4,9 +4,6 @@ import sys
 from typing import Callable
 from static import *
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../shade')))
-from gradient_writer import GradientWriter  # type: ignore
-
 class PositionalColor:
     def __init__(self, color: np.ndarray, position: tuple[int, int]):
         self.color = color

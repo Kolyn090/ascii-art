@@ -23,7 +23,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 1 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
@@ -59,7 +59,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 1 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
@@ -122,7 +122,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 1 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
@@ -148,7 +148,7 @@ python trace.py ^
 | ~~Save ASCII~~     | ❌          |
 
 ```commandline
-python trace_join.py ^
+python joined_trace.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --canny1 180 ^
 --canny2 260 ^
@@ -182,7 +182,7 @@ python trace_join.py ^
 | ~~Save ASCII~~     | ❌          |
 
 ```commandline
-python trace_join.py ^
+python joined_trace.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --canny1 180 ^
 --canny2 260 ^
@@ -226,7 +226,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 1 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
@@ -260,7 +260,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 1 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^

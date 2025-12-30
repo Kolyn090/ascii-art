@@ -2,13 +2,12 @@ import math
 import os
 import sys
 import time
-
 import cv2
 import argparse
 import numpy as np
 
 from contour import contour
-from trace import assemble_template
+from edge_trace import assemble_template
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
 from static import increase_contrast, invert_image  # type: ignore
@@ -20,7 +19,7 @@ from palette_template import PaletteTemplate  # type: ignore
 from ascii_writer import AsciiWriter  # type: ignore
 from color_util import PositionalColor, reassign_positional_colors  # type: ignore
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../shade')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../depth_shade')))
 from gradient_writer import GradientWriter  # type: ignore
 
 def main():

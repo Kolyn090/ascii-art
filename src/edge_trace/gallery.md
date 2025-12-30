@@ -1,11 +1,11 @@
-# Gallery (Trace ASCII Filter)
+# Gallery (Edge Trace ASCII Filter)
 
-1️⃣ `cd` to `src/trace`.
+1️⃣ `cd` to `src/edge_trace`.
 
 ---
 
 <p align="center">
-    <img src="../../resource/gallery/trace/gpe_invert_colored.png" width="400">
+    <img src="../../resource/gallery/edge_trace/gpe_invert_colored.png" width="400">
 </p>
 
 ```commandline
@@ -19,7 +19,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 4 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
@@ -31,7 +31,7 @@ python trace.py ^
 ---
 
 <p align="center">
-    <img src="../../resource/gallery/trace/gpe_invert_colored_invert.png" width="400">
+    <img src="../../resource/gallery/edge_trace/gpe_invert_colored_invert.png" width="400">
 </p>
 
 ```commandline
@@ -45,7 +45,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 4 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
@@ -58,7 +58,7 @@ python trace.py ^
 ---
 
 <p align="center">
-    <img src="../../resource/gallery/trace/gpe_colored.png" width="400">
+    <img src="../../resource/gallery/edge_trace/gpe_colored.png" width="400">
 </p>
 
 ```commandline
@@ -71,7 +71,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 4 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
@@ -83,7 +83,7 @@ python trace.py ^
 ---
 
 <p align="center">
-    <img src="../../resource/gallery/trace/gpe_colored_invert.png" width="400">
+    <img src="../../resource/gallery/edge_trace/gpe_colored_invert.png" width="400">
 </p>
 
 ```commandline
@@ -96,7 +96,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 4 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
@@ -109,11 +109,11 @@ python trace.py ^
 ---
 
 <p align="center">
-    <img src="../../resource/gallery/trace/gpe_join.png" width="400">
+    <img src="../../resource/gallery/edge_trace/gpe_join.png" width="400">
 </p>
 
 ```commandline
-python trace_join.py ^
+python joined_trace.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --canny1 180 ^
 --canny2 260 ^
@@ -134,11 +134,11 @@ python trace_join.py ^
 ---
 
 <p align="center">
-    <img src="../../resource/gallery/trace/gpe_join_invert.png" width="400">
+    <img src="../../resource/gallery/edge_trace/gpe_join_invert.png" width="400">
 </p>
 
 ```commandline
-python trace_join.py ^
+python joined_trace.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --canny1 180 ^
 --canny2 260 ^
@@ -283,7 +283,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 4 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
@@ -417,7 +417,7 @@ python contour.py ^
 ```
 
 ```commandline
-python trace.py ^
+python edge_trace.py ^
 --image_path ./contour/contour_180_260.png ^
 --resize_factor 4 ^
 --palette_path ../../resource/palette_files/palette_chars.json ^
@@ -542,7 +542,7 @@ python trace.py ^
 ```
 
 ```commandline
-python trace_join.py ^
+python joined_trace.py ^
 --image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
 --canny1 180 ^
 --canny2 260 ^
