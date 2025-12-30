@@ -20,11 +20,11 @@ class CharTemplate:
 
     def __eq__(self, other):
         return isinstance(other, CharTemplate) and \
-            (self.char, self.image_font.path, self.char_bound) == \
-            (other.char, other.image_font.path, other.char_bound)
+            (self.char, self.image_font.path if self.image_font else "", self.char_bound) == \
+            (other.char, other.image_font.path if other.image_font else "", other.char_bound)
 
     def __hash__(self):
-        return hash((self.char, self.image_font.path, self.char_bound))
+        return hash((self.char, self.image_font.path if self.image_font else "", self.char_bound))
 
     def __str__(self):
         return f"{{'{self.char}'{self.char_bound}}}"

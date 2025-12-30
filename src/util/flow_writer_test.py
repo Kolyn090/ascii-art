@@ -2,6 +2,8 @@ import os
 import sys
 import cv2
 import numpy as np
+from PIL.ImageFont import FreeTypeFont
+
 from arg_util import ShadeArgUtil
 from palette_template import PaletteTemplate
 from static import (to_binary_strong, to_grayscale, increase_contrast,  # type: ignore
@@ -10,6 +12,7 @@ from static import (to_binary_strong, to_grayscale, increase_contrast,  # type: 
 from writer import CharTemplate  # type: ignore
 from flow_writer import FlowWriter
 from char_template import PositionalCharTemplate
+from np_knapsack import np_knapsack, Item
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../shade')))
 from gradient_divide import divide  # type: ignore
@@ -56,7 +59,7 @@ def test():
     char_weight[' '] = -10000
 
     using_char_templates = get_using_char_templates(palettes, max_workers)
-    stack_test(layers, char_weight, resize_factor * image.shape[:2][1])
+    stack_test(layers, char_weight, resize_factor * image.shape[:2][1], using_char_templates)
 
 def get_using_char_templates(palettes: list[PaletteTemplate],
                              max_workers: int) -> set[CharTemplate]:
@@ -106,8 +109,9 @@ def stack(layers: list[list[PositionalCharTemplate]],
     cv2.imwrite("jx_files/final_img.png", final_img)
 
 def stack_test(layers: list[list[PositionalCharTemplate]],
-          char_weight: dict[str, int],
-          image_width: int):
+               char_weight: dict[str, int],
+               image_width: int,
+               using_char_templates: set[CharTemplate]):
     row_table: dict[int, list[list[PositionalCharTemplate]]] = dict()
     for i in range(len(layers)):
         layer = layers[i]
@@ -124,7 +128,7 @@ def stack_test(layers: list[list[PositionalCharTemplate]],
     print(len(transitional_horizontals))
     for y, row_layers in row_table.items():
         print(f"===============y: {y}===================")
-        tilings = stack_overlay_test(row_layers[:test_len], char_weight, image_width)  # transitional
+        tilings = stack_overlay_test(row_layers[:test_len], char_weight, image_width, using_char_templates)  # transitional
         # tilings = stack_overlay_test(list(reversed(row_layers)), char_weight, image_width)
         # tilings = stack_overlay_test(row_layers, char_weight, image_width)
 
@@ -187,15 +191,16 @@ def build_position_maps(row_layers: list[list[PositionalCharTemplate]]) \
 #     return result
 
 def stack_overlay_test(row_layers: list[list[PositionalCharTemplate]],
-            char_weight: dict[str, int],
-            image_width: int) \
+                       char_weight: dict[str, int],
+                       image_width: int,
+                       using_char_templates: set[CharTemplate]) \
         -> list[list[tuple[PositionalCharTemplate, int, int]]]:
     output: list[PositionalCharTemplate] = row_layers[0]
     result: list[list[tuple[PositionalCharTemplate, int, int]]] = []
     for i in range(1, len(row_layers)):
         row_layer = row_layers[i]
         new_row_layers = [output, row_layer]
-        overlay_result = overlay(new_row_layers, char_weight, image_width)
+        overlay_result = overlay(new_row_layers, char_weight, image_width, using_char_templates)
         is_overlay_continuous(overlay_result)
         output = [p_ct for p_ct, s, e in overlay_result]
         result.append(overlay_result)
@@ -229,7 +234,8 @@ def is_overlay_continuous(pos_map: list[tuple[PositionalCharTemplate, int, int]]
 
 def overlay(row_layers: list[list[PositionalCharTemplate]],
             char_weight: dict[str, int],
-            image_width: int) \
+            image_width: int,
+            using_char_templates: set[CharTemplate]) \
         -> list[tuple[PositionalCharTemplate, int, int]]:
     result = []
     pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]] = build_position_maps(row_layers)
@@ -241,6 +247,9 @@ def overlay(row_layers: list[list[PositionalCharTemplate]],
     layer_weight = {i: i for i in range(len(row_layers))}
 
     last_best_choice = -1
+
+    height = pos_maps[0][0][0].char_template.char_bound[1]
+    base_reference_list = get_base_reference_list(3, height)
     while begin <= image_width:
         len_longest_short_img_from_begin = find_len_longest_short_img_from_begin(pos_maps, begin)
 
@@ -270,7 +279,11 @@ def overlay(row_layers: list[list[PositionalCharTemplate]],
         best_start = pos_maps[best_choice][first_of_best_in_span][1]
         diff = best_start - begin
         if diff > 0:
-            result.append(make_filler(diff, pos_maps[0][0][0].char_template.char_bound[1], begin, y))
+            reference_list = []
+            reference_list.extend(base_reference_list)
+            reference_list.extend(get_references(result, 5))
+            # result.append(make_filler(diff, pos_maps[0][0][0].char_template.char_bound[1], begin, y))
+            result.extend(generate_fillers(diff, begin, y, char_weight, set(reference_list), using_char_templates))
             # print(diff, pos_maps[0][0][0].char_template.char_bound[1], begin, y, f"new_begin={begin}")
 
         if last_of_best_in_span == -1:
@@ -289,33 +302,77 @@ def overlay(row_layers: list[list[PositionalCharTemplate]],
         begin = determine_new_begin(pos_maps, best_end, char_weight)
         diff = begin - best_end
         if diff > 0:
-            result.append(make_filler(diff, pos_maps[0][0][0].char_template.char_bound[1], best_end, y))
+            reference_list = []
+            reference_list.extend(base_reference_list)
+            reference_list.extend(get_references(result, 5))
+            # result.append(make_filler(diff, pos_maps[0][0][0].char_template.char_bound[1], best_end, y))
+            result.extend(generate_fillers(diff, best_end, y, char_weight, set(reference_list), using_char_templates))
             # print(diff, pos_maps[0][0][0].char_template.char_bound[1], best_end, y, f"new_begin={begin}")
 
     return result
 
-def generate_fillers(total_width: int, height: int,
-                     start: int, y: int, references: list[CharTemplate],
-                     lambda_val: float) \
+def get_base_reference_list(max_width: int, height: int) -> list[CharTemplate]:
+    result = []
+
+    for width in range(1, max_width+1):
+        img = np.full((height, width, 3), (0, 0, 0), dtype=np.uint8)
+        img_bin = to_grayscale(img)
+        img_bin = to_binary_strong(img_bin)
+        char_template = CharTemplate("filler", None, (width, height),
+                                     img,
+                                     img_bin,
+                                     img_bin,
+                                     img_bin)
+        result.append(char_template)
+
+    return result
+
+def get_references(curr: list[tuple[PositionalCharTemplate, int, int]], k: int) -> set[CharTemplate]:
+    last_k = curr[-k:]
+    last_k = [p_ct.char_template for p_ct, s, e in last_k]
+    return set(last_k)
+
+def generate_fillers(total_width: int,
+                     start: int, y: int,
+                     char_weight: dict[str, int],
+                     references: set[CharTemplate],
+                     using_char_templates: set[CharTemplate]) \
         -> list[tuple[PositionalCharTemplate, int, int]]:
     """
     Multi-objective knapsack.
     1. Fill the capacity as much as possible (total_width)
     2. Minimize the value (template weight) difference
-    Objective function:
-    fill_score(S) - lambda * similarity_distance(values(S), values(A))
-    sum(size) <= capacity
-    * lambda = similarity vs fill
 
-    :param lambda_val:
     :param total_width:
-    :param height:
     :param start:
     :param y:
+    :param char_weight:
     :param references:
+    :param using_char_templates:
     :return:
     """
-    pass
+
+    # Get best filling choices
+    items_a: list[Item] = [Item(ct, char_weight[ct.char] if ct.char in char_weight else -10000, ct.char_bound[0]) for ct in using_char_templates]
+    items_b: list[Item] = [Item(ct, char_weight[ct.char] if ct.char in char_weight else -10000, ct.char_bound[0]) for ct in references]
+    C = total_width
+    knapsack = np_knapsack(items_a, items_b, C, 1, 7, lambda_val=0.9)
+    knapsack = [item.stored for item in knapsack]
+
+    # Start generating the fillers (p_ct, start, end)
+    # width_sum = 0
+    result = []
+    # chars = []
+    for ct in knapsack:
+        p_ct = PositionalCharTemplate(ct, (start, y))
+        width = ct.char_bound[0]
+        result.append((p_ct, start, start + width))
+        # chars.append(p_ct.char_template.char)
+        # width_sum += width
+        start += width
+    # if width_sum != total_width:
+    #     raise Exception(f"Not match: {width_sum} vs {total_width}, {chars}, {references}")
+    return result
 
 def make_filler(width: int, height: int, start: int, y: int) -> tuple[PositionalCharTemplate, int, int]:
     img = np.full((height, width, 3), (255, 255, 255), dtype=np.uint8)

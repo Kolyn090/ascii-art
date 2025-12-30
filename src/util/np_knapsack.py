@@ -6,30 +6,27 @@ class Item:
         self.size = size
         self.stored = stored
 
-def np_knapsack(items_a: list[Item],
-                items_b: list[Item],
-                C: int,
-                min_items: int = 3,
-                max_items: int = 5,
-                lambda_val: float = 0.5) -> list[Item]:
+def np_knapsack(
+    items_a: list[Item],
+    items_b: list[Item],
+    C: int,
+    min_items: int = 1,
+    max_items: int = 5,
+    lambda_val: float = 0.5
+) -> list[Item]:
     """
-    * ChatGPT-5
-    Selects items from items_b (allowing duplicates) to maximize capacity usage
-    while keeping values similar to items_a.
-
-    Args:
-        items_a: list of reference Items (values only)
-        items_b: list of candidate Items (size and value)
-        C: capacity limit (sum of sizes)
-        min_items: minimum expected number of items
-        max_items: maximum expected number of items
-        lambda_val:
-    Returns:
-        best_subset: list of selected Items from B (may contain duplicates)
+    Safe knapsack selection allowing duplicates from items_b.
+    Returns the best subset according to capacity fill and value similarity.
+    Always returns a subset if any item fits.
     """
 
     if not items_b or C <= 0:
         return []
+
+    # Filter items that can fit in capacity
+    fit_items = [item for item in items_b if item.size <= C]
+    if not fit_items:
+        return []  # nothing fits
 
     a_values = [a.value for a in items_a]
     best_subset: list[Item] = []
@@ -38,33 +35,34 @@ def np_knapsack(items_a: list[Item],
     ALPHA = lambda_val  # weight for capacity fill
     BETA = 1 - lambda_val   # weight for value similarity
 
-    for k in range(min_items, max_items + 1):
-        # combinations with replacement allow duplicates
-        for combo in combinations_with_replacement(items_b, k):
+    # Dynamically adjust min/max items so at least one combination can fit
+    max_possible_items = min(max_items, C // min(item.size for item in fit_items))
+    min_possible_items = max(min_items, 1)
+
+    for k in range(min_possible_items, max_possible_items + 1):
+        for combo in combinations_with_replacement(fit_items, k):
             total_size = sum(item.size for item in combo)
             if total_size > C:
-                continue  # skip if capacity exceeded
+                continue  # skip if over capacity
 
-            # ---- fill score ----
             fill_ratio = total_size / C
 
-            # ---- similarity score ----
             if a_values:
-                dist_sum = 0.0
-                for item in combo:
-                    nearest = min(abs(item.value - a) for a in a_values)
-                    dist_sum += nearest
+                dist_sum = sum(min(abs(item.value - a) for a in a_values) for item in combo)
                 avg_distance = dist_sum / k
                 similarity_score = 1.0 / (1.0 + avg_distance)
             else:
                 similarity_score = 0.0
 
-            # ---- combined score ----
             score = ALPHA * fill_ratio + BETA * similarity_score
 
             if score > best_score:
                 best_score = score
                 best_subset = list(combo)
+
+    # If nothing selected (very small C), pick the single best-fit item
+    if not best_subset:
+        best_subset = [max(fit_items, key=lambda x: x.value / x.size)]
 
     return best_subset
 
@@ -106,7 +104,9 @@ def test():
         Item('+', 5, 12),
     ]
 
-    knapsack = np_knapsack(items_a, items_b, 25)
+    C = 4
+    knapsack = np_knapsack(items_a, items_b, C)
+
     for item in knapsack:
         print(item.stored, item.value, item.size)
 
