@@ -2,7 +2,7 @@
 
 ---
 
-[**Trace ASCII Filter**](./src/trace/README.md)
+[**Trace ASCII Filter**](src/edge_trace/README.md)
 
 Edge Detection + ASCII character matching
 
@@ -14,11 +14,11 @@ Edge Detection + ASCII character matching
     <img src="./resource/readme_imgs/main_tsunami.png" width="600">
 </p>
 
-🖼️ Go to [gallery](./src/trace/gallery.md) to see more examples!
+🖼️ Go to [gallery](src/edge_trace/gallery.md) to see more examples!
 
 ---
 
-[**Shade ASCII Filter**](./src/shade/README.md)
+[**Shade ASCII Filter**](src/depth_shade/README.md)
 
 Each shading (gradient) level has its own set of characters. Just need to 
 change one value (thresholds_gamma) to make the algorithm automatically 
@@ -28,11 +28,11 @@ distinguish the gradient level for your!
     <img src="./resource/readme_imgs/main_monalisa.png" width="600">
 </p>
 
-🖼️ Go to [gallery](./src/shade/gallery.md) to see more examples!
+🖼️ Go to [gallery](src/depth_shade/gallery.md) to see more examples!
 
 ---
 
-[**Edge Gradient ASCII Filter**](./src/edge_gradient/README.md)
+[**Edge Gradient ASCII Filter**](src/contour_shade/README.md)
 
 Shade around the edges.
 
@@ -40,7 +40,7 @@ Shade around the edges.
     <img src="./resource/readme_imgs/main_tsunami2.png" width="600">
 </p>
 
-🖼️ Go to [gallery](./src/edge_gradient/gallery.md) to see more examples!
+🖼️ Go to [gallery](src/contour_shade/gallery.md) to see more examples!
 
 ---
 

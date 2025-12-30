@@ -37,7 +37,7 @@ def test_match_cells():
     max_workers = 16
     factor = 8
     char_bound = (13, 22)
-    img_path = '../trace/contour/contour_240_200.png'
+    img_path = '../edge_trace/contour/contour_240_200.png'
     save_folder = 'test'
     resize_method = 'nearest_neighbor'
     save_to_folder = True
