@@ -4,7 +4,7 @@ import sys
 import numpy as np
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
-from static import (resize_bilinear, invert_image, increase_contrast,  # type: ignore
+from static import (resize_bilinear, increase_contrast,  # type: ignore
                     to_grayscale, smooth_colors)  # type: ignore
 
 
@@ -21,10 +21,8 @@ def divide(img_gray: np.ndarray, n_levels: int, thresholds_gamma: float) -> list
 
         # Mask in scaled gradient
         mask = ((grad_scaled >= lower) & (grad_scaled <= upper)).astype(np.uint8)
-        # level_img = np.dstack([rgb, alpha])
         level_img = cv2.bitwise_and(img_gray, img_gray, mask=mask)
         level_img[level_img > 0] = 255
-        # level_img = invert_image(level_img)
         level_images.append(level_img)
 
     return level_images
@@ -79,8 +77,6 @@ def test():
 
     cv2.imwrite("test.png", img)
 
-    # print(compute_equal_pixel_thresholds(img, 4))
-    # return
     if save_to_folder:
         os.makedirs(save_folder, exist_ok=True)
 

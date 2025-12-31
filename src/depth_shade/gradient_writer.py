@@ -7,10 +7,9 @@ from concurrent.futures import ThreadPoolExecutor
 from gradient_divide import divide
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
-from static import (resize_nearest_neighbor, resize_bilinear, invert_image,  # type: ignore
-                    floor_fill, increase_contrast, to_grayscale, smooth_colors)  # type: ignore
+from static import invert_image  # type: ignore
 from char_template import CharTemplate, PositionalCharTemplate  # type: ignore
-from slicer import Cell, Slicer  # type: ignore
+from slicer import Slicer  # type: ignore
 from palette_template import PaletteTemplate  # type: ignore
 
 class GradientWriter:
