@@ -2,7 +2,7 @@
 
 ---
 
-[**Trace ASCII Filter**](src/edge_trace/README.md)
+[**Edge Trace ASCII Filter**](src/edge_trace/README.md)
 
 Edge Detection + ASCII character matching
 
@@ -18,7 +18,7 @@ Edge Detection + ASCII character matching
 
 ---
 
-[**Shade ASCII Filter**](src/depth_shade/README.md)
+[**Depth Shade ASCII Filter**](src/depth_shade/README.md)
 
 Each shading (gradient) level has its own set of characters. Just need to 
 change one value (thresholds_gamma) to make the algorithm automatically 
@@ -32,7 +32,7 @@ distinguish the gradient level for your!
 
 ---
 
-[**Edge Gradient ASCII Filter**](src/contour_shade/README.md)
+[**Contour Shade ASCII Filter**](src/contour_shade/README.md)
 
 Shade around the edges.
 
