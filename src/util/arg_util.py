@@ -43,24 +43,6 @@ class TraceArgUtil:
 class ShadeArgUtil:
     @staticmethod
     def get_palette_json(file_path: str) -> list[PaletteTemplate]:
-        def parse_template(obj: dict) -> PaletteTemplate:
-            override_widths = None
-            if "override_widths" in obj:
-                override_widths = dict()
-                for item in obj["override_widths"]:
-                    override_widths[item["char"]] = item["width"]
-
-            return PaletteTemplate(
-                obj["layer"],
-                list(dict.fromkeys(c for c in obj["chars"] if c != '\n')),
-                ImageFont.truetype(obj["font"], int(obj["font_size"])),
-                (obj["char_bound_width"], obj["char_bound_height"]),
-                obj["approx_ratio"],
-                obj["vector_top_k"],
-                obj["match_method"],
-                override_widths
-            )
-
         result = []
         with open(file_path, 'r', encoding='utf-8') as f:
             content = json.load(f)
@@ -68,7 +50,7 @@ class ShadeArgUtil:
             templates = content["templates"]
             print(f"Reading palette from {name}.")
             for template in templates:
-                result.append(parse_template(template))
+                result.append(PaletteTemplate.read_from_json(template))
         return result
 
 class ColorArgUtil:

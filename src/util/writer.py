@@ -19,7 +19,8 @@ class Writer:
                  match_method: str,
                  vector_top_k: int,
                  chars: list[str],
-                 override_widths: dict[str, int] | None = None):
+                 override_widths: dict[str, int] | None = None,
+                 override_weights: dict[tuple[str, int], float] | None = None):
         self.image_font = image_font
         self.max_workers = max_workers
         self.char_bound = char_bound
@@ -31,6 +32,7 @@ class Writer:
         self.space_template = None
         self.approx_size = (7, 12)
         self.override_widths = override_widths
+        self.override_weights = override_weights
 
         self._assign_char_templates(chars)
 
