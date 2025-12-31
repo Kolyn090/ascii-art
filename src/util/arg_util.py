@@ -1,8 +1,6 @@
 import json
 import os.path
-
 import numpy as np
-from PIL import ImageFont
 
 from palette_template import PaletteTemplate
 from static import resize_nearest_neighbor, resize_bilinear, invert_image

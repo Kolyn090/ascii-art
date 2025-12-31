@@ -24,9 +24,11 @@ class FlowWriter:
                  image_font: FreeTypeFont,
                  gap: int,
                  flow_match_method: str,
-                 binary_threshold=90):
+                 binary_threshold=90,
+                 override_weights: dict[tuple[str, int], float] | None = None):
         self.char_bound = char_bound
         self.override_widths = override_widths
+        self.override_weights = override_weights
         self.image_font = image_font
         self.flow_match_method = flow_match_method
         self.gap = gap

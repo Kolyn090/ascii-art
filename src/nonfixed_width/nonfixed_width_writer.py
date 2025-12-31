@@ -1,13 +1,16 @@
 import os
 import sys
-
 import numpy as np
+
+from flow_writer import FlowWriter
+from np_knapsack import Item, np_knapsack
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
 from palette_template import PaletteTemplate  # type: ignore
 from static import (to_binary_strong, to_grayscale, increase_contrast,  # type: ignore
                     resize_nearest_neighbor, to_binary_middle, smooth_colors,  # type: ignore
                     invert_image)  # type: ignore
+from char_template import CharTemplate, PositionalCharTemplate  # type: ignore
 
 class NonFixedWidthWriter:
     def __init__(self,
@@ -17,17 +20,367 @@ class NonFixedWidthWriter:
         self.palettes = palettes
         self.max_workers = max_workers
         self.gradient_imgs = gradient_imgs
-        self.layers = self._get_layers()
+        self.layers: list[list[PositionalCharTemplate]] = []
+        self.using_char_templates: set[CharTemplate] = set()
+        self.char_weights = self._get_char_weights()
 
-    def _get_layers(self):
-        layers = []
+        # Debug
+        self.transitional_imgs: list[np.ndarray] = []
+
+        self._init_field_vars()
+
+    def _init_field_vars(self):
+        using_char_templates = []
         for i in range(len(self.palettes)):
             palette = self.palettes[i]
             gradient_img = self.gradient_imgs[i]
+            gradient_img = invert_image(gradient_img)
             flow_writer = palette.create_flow_writer(self.max_workers)
-            final_img, p_cts = flow_writer.match(gradient_img)
-            layers.append(p_cts)
-        return layers
+            img, p_cts = flow_writer.match(gradient_img)
+            img = invert_image(img)
 
-    def _get_char_weight(self) -> dict[str, int]:
-        pass
+            for j in range(len(flow_writer.char_templates)):
+                ct = flow_writer.char_templates[j]
+                char = ct.char
+                width = ct.char_bound[0]
+                if (char, width) not in self.char_weights:
+                    self.char_weights[(char, width)] = j * 2 + i
+
+            self.transitional_imgs.append(img)
+            self.layers.append(p_cts)
+            using_char_templates.extend(flow_writer.char_templates)
+        self.using_char_templates = set(using_char_templates)
+
+    def _get_char_weights(self) -> dict[tuple[str, int], float]:
+        char_weights = dict()
+
+        for palette in self.palettes:
+            weights: dict[tuple[str, int], float] = palette.override_weights
+            if weights is not None:
+                for key, val in weights.items():
+                    if key not in char_weights:
+                        char_weights[key] = val
+        return char_weights
+
+    def stack(self, width: int) -> np.ndarray:
+        row_table: dict[int, list[list[PositionalCharTemplate]]] = dict()
+        for i in range(len(self.layers)):
+            layer = self.layers[i]
+            for p_ct in layer:
+                y = p_ct.top_left[1]
+                if y not in row_table:
+                    row_table[y] = []
+                if len(row_table[y]) < i + 1:
+                    row_table[y].append([])
+                row_table[y][i].append(p_ct)
+
+        horizontals = []
+        for y, row_layers in row_table.items():
+            print(f"===============y: {y}===================")
+            tiling = self._overlay(row_layers, width)
+            p_cts = [p_ct for p_ct, _, _ in tiling]
+            imgs = [p_ct.char_template.img for p_ct in p_cts]
+            horizontal = FlowWriter.concat_images_left_to_right(imgs)
+            horizontals.append(horizontal)
+        final_img = FlowWriter.concat_images_top_to_bottom(horizontals, (255, 255, 255))
+        final_img = invert_image(final_img)
+        return final_img
+
+    def _overlay(self, row_layers: list[list[PositionalCharTemplate]], width: int) -> \
+            list[tuple[PositionalCharTemplate, int, int]]:
+        result = []
+        pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]] = self._build_position_maps(row_layers)
+        begin = 0
+
+        # for pos_map in pos_maps:
+        #     is_overlay_continuous(pos_map)
+
+        layer_weight = {i: i for i in range(len(row_layers))}
+
+        last_best_choice = -1
+
+        height = pos_maps[0][0][0].char_template.char_bound[1]
+        base_reference_list = self._get_base_reference_list(1, height)
+        while begin <= width:
+            len_longest_short_img_from_begin = self._find_len_longest_short_img_from_begin(pos_maps, begin)
+
+            last_indices_spanning_short_imgs = self._find_last_indices_spanning_short_imgs(pos_maps,
+                                                                                     begin,
+                                                                                     len_longest_short_img_from_begin)
+
+            best_choice: int = self._find_best_offset_choice(pos_maps,
+                                                               begin,
+                                                               layer_weight,
+                                                               last_indices_spanning_short_imgs,
+                                                               last_best_choice)  # This is index of layer
+
+            last_best_choice = best_choice
+            first_of_best_in_span = self._get_index_start_from_begin(pos_maps[best_choice],
+                                                               begin)  # This is index of short image
+            last_of_best_in_span = last_indices_spanning_short_imgs[best_choice]  # This is index of short image
+
+            y = pos_maps[0][0][0].top_left[1]
+            best_start = pos_maps[best_choice][first_of_best_in_span][1]
+            diff = best_start - begin
+            if diff > 0:
+                reference_list = []
+                reference_list.extend(base_reference_list)
+                reference_list.extend(self._get_references(result, 15))
+                # result.append(make_filler(diff, pos_maps[0][0][0].char_template.char_bound[1], begin, y))
+                result.extend(self._generate_fillers(diff, begin, y, set(reference_list)))
+                # print(diff, pos_maps[0][0][0].char_template.char_bound[1], begin, y, f"new_begin={begin}")
+
+            if last_of_best_in_span == -1:
+                last_of_best_in_span = first_of_best_in_span
+
+            if last_of_best_in_span == -1:
+                return result
+
+            new_extend = pos_maps[best_choice][first_of_best_in_span: last_of_best_in_span + 1]
+            result.extend(new_extend)
+
+            best_pos_map = pos_maps[best_choice]
+            best_end: int = best_pos_map[last_of_best_in_span][2]
+            # apply_offset(pos_maps, last_indices_spanning_short_imgs, best_end, False)
+
+            begin = self._determine_new_begin(pos_maps, best_end)
+            diff = begin - best_end
+            if diff > 0:
+                reference_list = []
+                reference_list.extend(base_reference_list)
+                reference_list.extend(self._get_references(result, 15))
+                # result.append(make_filler(diff, pos_maps[0][0][0].char_template.char_bound[1], best_end, y))
+                result.extend(self._generate_fillers(diff, best_end, y, set(reference_list)))
+                # print(diff, pos_maps[0][0][0].char_template.char_bound[1], best_end, y, f"new_begin={begin}")
+
+        return result
+
+    @staticmethod
+    def _get_base_reference_list(max_width: int, height: int) -> list[CharTemplate]:
+        result = []
+
+        for width in range(1, max_width + 1):
+            img = np.full((height, width, 3), (255, 255, 255), dtype=np.uint8)
+            img_bin = to_grayscale(img)
+            img_bin = to_binary_strong(img_bin)
+            char_template = CharTemplate("filler", None, (width, height),
+                                         img,
+                                         img_bin,
+                                         img_bin,
+                                         img_bin)
+            result.append(char_template)
+
+        return result
+
+    @staticmethod
+    def _get_references(curr: list[tuple[PositionalCharTemplate, int, int]], k: int) -> set[CharTemplate]:
+        last_k = curr[-k:]
+        last_k = [p_ct.char_template for p_ct, s, e in last_k]
+        return set(last_k)
+
+    def _generate_fillers(self,
+                         total_width: int,
+                         start: int, y: int,
+                         references: set[CharTemplate]) \
+            -> list[tuple[PositionalCharTemplate, int, int]]:
+        """
+        Multi-objective knapsack.
+        1. Fill the capacity as much as possible (total_width)
+        2. Minimize the value (template weight) difference
+
+        :param total_width:
+        :param start:
+        :param y:
+        :param references:
+        :return:
+        """
+
+        char_weights = self.char_weights
+        using_char_templates = self.using_char_templates
+        # Get best filling choices
+        items_a: list[Item] = [Item(ct, char_weights[(ct.char, ct.char_bound[0])] if (ct.char, ct.char_bound[0])
+                               in char_weights else 1, ct.char_bound[0]) for ct
+                               in using_char_templates]
+        items_b: list[Item] = [Item(ct, char_weights[(ct.char, ct.char_bound[0])] if (ct.char, ct.char_bound[0])
+                               in char_weights else 1, ct.char_bound[0]) for ct
+                               in references]
+        C = total_width
+        knapsack = np_knapsack(items_a, items_b, C, 1, 10, lambda_val=0.7)
+        knapsack = [item.stored for item in knapsack]
+
+        # Start generating the fillers (p_ct, start, end)
+        result = []
+        for ct in knapsack:
+            p_ct = PositionalCharTemplate(ct, (start, y))
+            width = ct.char_bound[0]
+            result.append((p_ct, start, start + width))
+            start += width
+        return result
+
+    def _determine_new_begin(self,
+                            pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]],
+                            best_end: int) -> int:
+        char_weights = self.char_weights
+        result = best_end
+        highest_char_val = -float('inf')
+
+        for pos_map in pos_maps:
+            for p_ct, s, e in pos_map:
+                if s >= best_end:
+                    # Determine the value of char
+                    char = p_ct.char_template.char
+                    width = p_ct.char_template.char_bound[0]
+                    if (char, width) in char_weights:
+                        char_val = char_weights[(char, width)]
+                        if char_val > highest_char_val:
+                            highest_char_val = char_val
+                            result = s
+                    break
+        return result
+
+    @staticmethod
+    def _get_index_start_from_begin(pos_map: list[tuple[PositionalCharTemplate, int, int]],
+                                   begin: int) -> int:
+        for i in range(len(pos_map)):
+            p_ct, s, t = pos_map[i]
+            if s >= begin:
+                return i
+        return -1
+
+    @staticmethod
+    def _find_len_longest_short_img_from_begin(
+            pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]],
+            begin: int) -> int:
+        # Assume each layer has exactly one short img starting from 'begin'
+        longest_len = 0
+
+        for pos_map in pos_maps:
+            for p_ct, s, e in pos_map:
+                if s == begin:
+                    w = p_ct.char_template.char_bound[0]
+                    if w > longest_len:
+                        longest_len = w
+                    break
+        return longest_len
+
+    @staticmethod
+    def _find_last_indices_spanning_short_imgs(
+            pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]],
+            begin: int,
+            span_len: int) -> list[int]:
+        result = []
+        over = begin + span_len
+
+        for i in range(len(pos_maps)):
+            last = -1
+            for j in range(len(pos_maps[i])):
+                p_ct, s, e = pos_maps[i][j]
+                if begin <= s and e <= over:
+                    last = j
+            result.append(last)
+        return result
+
+    def _find_best_offset_choice(
+            self,
+            pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]],
+            begin: int,
+            layer_weight: dict[int, int],
+            last_indices_spanning_short_imgs: list[int],
+            last_best_choice: int) -> int:
+        char_weights = self.char_weights
+        high_score = -float('inf')
+        result = 0
+
+        debug = []
+
+        for i in range(len(last_indices_spanning_short_imgs)):
+            last_index_spanning_short_imgs = last_indices_spanning_short_imgs[i]
+            if last_index_spanning_short_imgs == -1:
+                continue
+
+            pos_map = pos_maps[i]
+            last_short_img = pos_map[last_index_spanning_short_imgs]
+            e = last_short_img[2]
+            offset_mse = self._find_offset_mse(pos_maps, begin, e - begin, last_indices_spanning_short_imgs)
+            char_weight_sum, chars = self._calculate_char_weight_sum(char_weights, pos_map, begin, e - begin)
+            curr_layer_weight = layer_weight[i]
+
+            coherence_score = 1 if last_best_choice == i else 0
+            # chars_join = ",".join(chars)
+            # debug.append((begin, e, f"[{chars_join}]", char_weight_sum, curr_layer_weight, offset_mse, coherence_score))
+            choice_score = self._calculate_choice_score(offset_mse,
+                                                  char_weight_sum,
+                                                  curr_layer_weight,
+                                                  coherence_score)
+            if choice_score > high_score:
+                high_score = choice_score
+                result = i
+
+        return result
+
+    @staticmethod
+    def _find_offset_mse(
+            pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]],
+            begin: int,
+            span_len: int,
+            last_span_indices: list[int]) -> int:
+        result = 0
+        over = begin + span_len
+
+        for i in range(len(last_span_indices)):
+            last_span_index = last_span_indices[i]
+            pos_map = pos_maps[i]
+            if last_span_index == -1:
+                continue
+            next_last = last_span_index + 1
+            if next_last < len(pos_map):
+                next_last_short_img = pos_map[next_last]
+                s = next_last_short_img[1]
+                result += (s - over) * (s - over)
+        return result
+
+    @staticmethod
+    def _calculate_choice_score(offset_mse: int,
+                               char_weight_sum: int,
+                               curr_layer_weight: int,
+                               coherence_score) \
+            -> float:
+        return char_weight_sum * 50 + curr_layer_weight * 150 - offset_mse * 10 + coherence_score * 5
+
+    @staticmethod
+    def _calculate_char_weight_sum(char_weight: dict[(str, int), float],
+                                  pos_map: list[tuple[PositionalCharTemplate, int, int]],
+                                  begin: int,
+                                  span_len: int) -> tuple[int, list[str]]:
+        over = begin + span_len
+        result = 0
+        chars = []
+
+        for p_ct, s, e in pos_map:
+            if s >= begin and e <= over:
+                char = p_ct.char_template.char
+                width = p_ct.char_template.char_bound[0]
+                if (char, width) in char_weight:
+                    result += char_weight[(char, width)]
+                    chars.append(char)
+        return result, chars
+
+    @staticmethod
+    def _build_position_maps(row_layers: list[list[PositionalCharTemplate]]) \
+            -> list[list[tuple[PositionalCharTemplate, int, int]]]:
+        """
+        For each row layer, convert the short images to
+        tuples of (short image, start x, end x)
+        :param row_layers:
+        :return:
+        """
+        result = []
+        for layer in row_layers:
+            curr = 0
+            intervals = []
+            for p_ct in layer:
+                w = p_ct.char_template.char_bound[0]
+                intervals.append((p_ct, curr, curr + w))
+                curr += w
+            result.append(intervals)
+        return result
