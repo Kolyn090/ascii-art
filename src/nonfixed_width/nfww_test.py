@@ -34,13 +34,21 @@ def test():
 
     print(nfww.char_weights)
 
-    count = 1
-    for img in nfww.transitional_imgs:
-        cv2.imwrite(f"jx_files/transition_{count}.png", img)
-        count += 1
+    # count = 1
+    # for img in nfww.transitional_imgs:
+    #     cv2.imwrite(f"jx_files/transition_{count}.png", img)
+    #     count += 1
 
-    converted = nfww.stack(resize_factor * image.shape[:2][1])
-    cv2.imwrite(f"jx_files/final_img.png", converted)
+    width = resize_factor * image.shape[:2][1]
+
+    # converted = nfww.stack(width)
+    # cv2.imwrite(f"jx_files/final_img.png", converted)
+
+    converted_so = nfww.stack_overlay(width)
+    count = 1
+    for img in converted_so:
+        cv2.imwrite(f"jx_files/final_img_so_{count}.png", img)
+        count += 1
 
 if __name__ == '__main__':
     test()

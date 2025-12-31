@@ -86,6 +86,60 @@ class NonFixedWidthWriter:
         final_img = invert_image(final_img)
         return final_img
 
+    def stack_overlay(self, width: int) -> list[np.ndarray]:
+        """
+        Stack overlay is a more advanced way of overlay. Rather than applying overlay to
+        all layers, it first applies to layers 1 and 2 and get output A, then applies to
+        A and 3 and so on...
+        :param width:
+        :return:
+        """
+        row_table: dict[int, list[list[PositionalCharTemplate]]] = dict()
+        for i in range(len(self.layers)):
+            layer = self.layers[i]
+            for p_ct in layer:
+                y = p_ct.top_left[1]
+                if y not in row_table:
+                    row_table[y] = []
+                if len(row_table[y]) < i + 1:
+                    row_table[y].append([])
+                row_table[y][i].append(p_ct)
+
+        transitional_horizontals: dict[int, list[np.ndarray]] = {i: [] for i in range(len(self.palettes)-1)}
+        for y, row_layers in row_table.items():
+            print(f"===============y: {y}===================")
+            tilings = self._stack_overlay(row_layers, width)
+
+            for i in range(len(tilings)):
+                tiling = tilings[i]
+                p_cts = [p_ct for p_ct, _, _ in tiling]
+                imgs = [p_ct.char_template.img for p_ct in p_cts]
+                horizontal = FlowWriter.concat_images_left_to_right(imgs)
+                transitional_horizontals[i].append(horizontal)
+
+        result = []
+        for idx, horizontals in transitional_horizontals.items():
+            img = FlowWriter.concat_images_top_to_bottom(horizontals, (255, 255, 255))
+            final_img = invert_image(img)
+            result.append(final_img)
+        return result
+
+    def _stack_overlay(self, row_layers: list[list[PositionalCharTemplate]], width: int) \
+            -> list[list[tuple[PositionalCharTemplate, int, int]]]:
+        output: list[PositionalCharTemplate] = row_layers[0]
+        result: list[list[tuple[PositionalCharTemplate, int, int]]] = []
+        for i in range(1, len(row_layers)):
+            row_layer = row_layers[i]
+            new_row_layers = [output, row_layer]
+            overlay_result = self._overlay(new_row_layers, width)
+            output = [p_ct for p_ct, s, e in overlay_result]
+            result.append(overlay_result)
+
+        if len(result) == 0:
+            result = [self._build_position_maps([output])[0]]
+
+        return result
+
     def _overlay(self, row_layers: list[list[PositionalCharTemplate]], width: int) -> \
             list[tuple[PositionalCharTemplate, int, int]]:
         result = []
@@ -93,7 +147,7 @@ class NonFixedWidthWriter:
         begin = 0
 
         # for pos_map in pos_maps:
-        #     is_overlay_continuous(pos_map)
+        #     self._is_overlay_continuous(pos_map)
 
         layer_weight = {i: i for i in range(len(row_layers))}
 
@@ -154,6 +208,26 @@ class NonFixedWidthWriter:
                 # print(diff, pos_maps[0][0][0].char_template.char_bound[1], best_end, y, f"new_begin={begin}")
 
         return result
+
+    @staticmethod
+    def _is_overlay_continuous(pos_map: list[tuple[PositionalCharTemplate, int, int]]):
+        last_s = pos_map[0][1]
+        last_e = pos_map[0][2]
+        last_p_ct = pos_map[0][0]
+        for i in range(1, len(pos_map) - 1):
+            p_ct, s, e = pos_map[i]
+            last_w = last_p_ct.char_template.char_bound[0]
+            if s != last_s + last_w:
+                raise Exception(f"Not continuous! "
+                                f"s={s}, "
+                                f"last_s={last_s}, "
+                                f"e={e}, "
+                                f"last_e={last_e}, "
+                                f"p_ct={{char: {p_ct.char_template.char}, width: {p_ct.char_template.char_bound[0]}}}, "
+                                f"last_p_ct={{char: {last_p_ct.char_template.char}, width: {last_p_ct.char_template.char_bound[0]}}}")
+            last_s = s
+            last_e = e
+            last_p_ct = p_ct
 
     @staticmethod
     def _get_base_reference_list(max_width: int, height: int) -> list[CharTemplate]:
