@@ -49,7 +49,7 @@ def main():
     img = to_grayscale(img)
     h, w = img.shape[:2]
 
-    eg_writer = EdgeGradientWriter(templates, args.max_workers)
+    eg_writer = EdgeGradientWriter(templates, args.max_workers, args.smoothing)
     eg_writer.assign_gradient_imgs(img,
                                     args.sigmaX,
                                     args.thresholds_gamma,

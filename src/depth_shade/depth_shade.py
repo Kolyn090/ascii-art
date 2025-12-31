@@ -32,6 +32,7 @@ def main():
     parser.add_argument('--color_option', type=str, default='')
     parser.add_argument('--save_ascii', action='store_true')
     parser.add_argument('--save_ascii_path', type=str, default='./')
+    parser.add_argument('--smoothing', action='store_true')
 
     args = parser.parse_args()
 
@@ -44,7 +45,7 @@ def main():
     img = to_grayscale(img)
     h, w = img.shape[:2]
 
-    gradient_writer = GradientWriter(templates, args.max_workers)
+    gradient_writer = GradientWriter(templates, args.max_workers, args.smoothing)
     gradient_writer.assign_gradient_imgs(img, args.thresholds_gamma)
     converted, p_cts = gradient_writer.match(w, h)
 
@@ -52,7 +53,8 @@ def main():
     color_result = ColorArgUtil.color_image(args.color_option,
                                             converted,
                                             o_img,
-                                            large_char_bound)
+                                            large_char_bound,
+                                            invert_ascii=False)
     color_blocks = None
     p_cs = []
     if color_result is not None:

@@ -15,11 +15,13 @@ from palette_template import PaletteTemplate  # type: ignore
 class GradientWriter:
     def __init__(self,
                  templates: list[PaletteTemplate],
-                 max_workers: int):
+                 max_workers: int,
+                 smoothing: bool):
         self.templates = templates
         self.max_workers = max_workers
         self.gradient_imgs: list[np.ndarray] = []
         self.char_rank: dict[str, int] = dict()
+        self.smoothing = smoothing
 
     def assign_gradient_imgs(self, img_gray: np.ndarray, thresholds_gamma: float):
         self.gradient_imgs = divide(img_gray, len(self.templates), thresholds_gamma)
@@ -28,7 +30,7 @@ class GradientWriter:
         p_ct_lists: list[list[PositionalCharTemplate]] = []
         for i in range(len(self.templates)):
             template = self.templates[i]
-            writer = template.create_writer(self.max_workers)
+            writer = template.create_writer(self.max_workers, self.smoothing)
             img = self.gradient_imgs[i]
             img = invert_image(img)
             slicer = Slicer()
@@ -46,7 +48,7 @@ class GradientWriter:
         result_img = np.zeros((h, w, 3), dtype=np.uint8)
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            list(executor.map(lambda cell: self._paste_to_img(cell, result_img), stacks))
+            list(executor.map(lambda cell: self._paste_to_img(cell, result_img, self.smoothing), stacks))
 
         result_img = invert_image(result_img)
         large_char_bound = self.get_large_char_bound()
@@ -63,12 +65,31 @@ class GradientWriter:
         return result_width, result_height
 
     @staticmethod
-    def _paste_to_img(p_ct: PositionalCharTemplate, result_img: np.ndarray):
-        template = p_ct.char_template.img
+    def _paste_to_img(p_ct: PositionalCharTemplate, result_img: np.ndarray, smoothing: bool):
+        if smoothing:
+            template = p_ct.char_template.img
+        else:
+            template = p_ct.char_template.img_binary
         top_left = p_ct.top_left
-        bottom_right_y = top_left[1] + template.shape[0]
-        bottom_right_x = top_left[0] + template.shape[1]
-        result_img[top_left[1]:bottom_right_y, top_left[0]:bottom_right_x] = template
+        # bottom_right_y = top_left[1] + template.shape[0]
+        # bottom_right_x = top_left[0] + template.shape[1]
+
+        # bottom_right_y = top_left[1] + template.shape[0]
+        # bottom_right_x = top_left[0] + template.shape[1]
+
+        # template: (H, W) or (H, W, 3)
+        h, w = template.shape[:2]
+
+        # ensure template has 3 channels
+        if template.ndim == 2:  # grayscale
+            template_to_paste = np.stack([template] * 3, axis=-1)
+        elif template.ndim == 3 and template.shape[2] == 3:  # already RGB
+            template_to_paste = template
+        else:
+            raise ValueError(f"Unsupported template shape: {template.shape}")
+
+        # paste into result_img
+        result_img[top_left[1]:top_left[1] + h, top_left[0]:top_left[0] + w] = template_to_paste
 
     def stack(self, p_ct_lists: list[list[PositionalCharTemplate]]) -> list[PositionalCharTemplate]:
         self._assign_template_rank()
