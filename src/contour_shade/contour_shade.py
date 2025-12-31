@@ -36,6 +36,7 @@ def main():
     parser.add_argument('--color_option', type=str, default='')
     parser.add_argument('--save_ascii', action='store_true')
     parser.add_argument('--save_ascii_path', type=str, default='./')
+    parser.add_argument('--smoothing', action='store_true')
 
     args = parser.parse_args()
 

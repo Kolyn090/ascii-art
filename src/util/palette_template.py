@@ -1,8 +1,12 @@
+import os
+import sys
 import json
 from writer import Writer
-from flow_writer import FlowWriter
 from PIL import ImageFont
 from PIL.ImageFont import FreeTypeFont
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../nonfixed_width')))
+from flow_writer import FlowWriter  # type: ignore
 
 class PaletteTemplate:
     def __init__(self,

@@ -1,6 +1,4 @@
 import math
-import os
-import sys
 from typing import Callable
 from static import *
 
@@ -37,15 +35,41 @@ def copy_black_pixels(source_img: np.ndarray,
     result[mask, :3] = [0, 0, 0]
     return result
 
-def copy_non_black_pixels_to_white(source_img: np.ndarray,
-                                   target_img: np.ndarray) -> np.ndarray:
+def blend_pixels(source_img: np.ndarray,
+                 target_img: np.ndarray) -> np.ndarray:
     assert source_img.shape[:2] == target_img.shape[:2], \
         "Images must have the same dimensions."
 
-    result = target_img.copy()
-    mask = np.all(source_img[..., :3] > 0, axis=2)
-    result[mask, :3] = [255, 255, 255]
-    return result
+    # Compute grayscale intensity
+    gray = source_img[..., :3].mean(axis=2)  # shape (H, W)
+
+    # Step 1: mask of pixels greater than 0
+    mask = (gray > 0)  # True where we want to blend
+
+    # Step 2: convert to strength (0-1)
+    strength = np.zeros_like(gray, dtype=np.float32)
+    strength[mask] = gray[mask] / 255.0  # only for masked pixels
+
+    # Step 3: expand grayscale to 3 channels
+    gray3 = np.repeat(gray[..., None], 3, axis=2).astype(np.float32)
+
+    # Ensure target is float
+    result = target_img.copy().astype(np.float32)
+
+    # Expand strength to 3 channels
+    strength3 = np.repeat(strength[..., None], 3, axis=2)
+
+    # Blend: result = (1 - strength) * target + strength * gray
+    result[..., :3] = strength3 * result[..., :3] + (1 - strength3) * 0.3 * gray3
+
+    # Preserve alpha if present
+    if target_img.shape[2] > 3:
+        result[..., 3:] = target_img[..., 3:]
+
+    # Convert back to uint8
+    result = np.clip(result, 0, 255).astype(np.uint8)
+
+    return result.astype(np.uint8)
 
 def process_image_blocks(img: np.ndarray,
                          cell_size: tuple[int, int],
