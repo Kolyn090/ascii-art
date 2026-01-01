@@ -16,12 +16,12 @@ class GradientWriter:
     def __init__(self,
                  templates: list[PaletteTemplate],
                  max_workers: int,
-                 smoothing: bool):
+                 antialiasing: bool):
         self.templates = templates
         self.max_workers = max_workers
         self.gradient_imgs: list[np.ndarray] = []
         self.char_rank: dict[str, int] = dict()
-        self.smoothing = smoothing
+        self.antialiasing = antialiasing
 
     def assign_gradient_imgs(self, img_gray: np.ndarray, thresholds_gamma: float):
         self.gradient_imgs = divide(img_gray, len(self.templates), thresholds_gamma)
@@ -30,7 +30,7 @@ class GradientWriter:
         p_ct_lists: list[list[PositionalCharTemplate]] = []
         for i in range(len(self.templates)):
             template = self.templates[i]
-            writer = template.create_writer(self.max_workers, self.smoothing)
+            writer = template.create_writer(self.max_workers, self.antialiasing)
             img = self.gradient_imgs[i]
             img = invert_image(img)
             slicer = Slicer()
@@ -48,7 +48,7 @@ class GradientWriter:
         result_img = np.zeros((h, w, 3), dtype=np.uint8)
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            list(executor.map(lambda cell: self._paste_to_img(cell, result_img, self.smoothing), stacks))
+            list(executor.map(lambda cell: self._paste_to_img(cell, result_img, self.antialiasing), stacks))
 
         result_img = invert_image(result_img)
         large_char_bound = self.get_large_char_bound()
@@ -65,8 +65,8 @@ class GradientWriter:
         return result_width, result_height
 
     @staticmethod
-    def _paste_to_img(p_ct: PositionalCharTemplate, result_img: np.ndarray, smoothing: bool):
-        if smoothing:
+    def _paste_to_img(p_ct: PositionalCharTemplate, result_img: np.ndarray, antialiasing: bool):
+        if antialiasing:
             template = p_ct.char_template.img
         else:
             template = p_ct.char_template.img_binary

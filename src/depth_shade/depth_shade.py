@@ -32,7 +32,7 @@ def main():
     parser.add_argument('--color_option', type=str, default='')
     parser.add_argument('--save_ascii', action='store_true')
     parser.add_argument('--save_ascii_path', type=str, default='./')
-    parser.add_argument('--smoothing', action='store_true')
+    parser.add_argument('--antialiasing', action='store_true')
 
     args = parser.parse_args()
 
@@ -45,7 +45,7 @@ def main():
     img = to_grayscale(img)
     h, w = img.shape[:2]
 
-    gradient_writer = GradientWriter(templates, args.max_workers, args.smoothing)
+    gradient_writer = GradientWriter(templates, args.max_workers, args.antialiasing)
     gradient_writer.assign_gradient_imgs(img, args.thresholds_gamma)
     converted, p_cts = gradient_writer.match(w, h)
 

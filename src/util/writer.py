@@ -19,7 +19,7 @@ class Writer:
                  match_method: str,
                  vector_top_k: int,
                  chars: list[str],
-                 smoothing: bool,
+                 antialiasing: bool,
                  override_widths: dict[str, int] | None = None,
                  override_weights: dict[tuple[str, int], float] | None = None):
         self.image_font = image_font
@@ -34,7 +34,7 @@ class Writer:
         self.approx_size = (7, 12)
         self.override_widths = override_widths
         self.override_weights = override_weights
-        self.smoothing = smoothing
+        self.antialiasing = antialiasing
 
         self._assign_char_templates(chars)
 
@@ -67,7 +67,7 @@ class Writer:
         :return: The most similar template to cell
         """
         most_similar = self.get_most_similar(cell.img)
-        if self.smoothing:
+        if self.antialiasing:
             template = most_similar.img
         else:
             template = most_similar.img_binary

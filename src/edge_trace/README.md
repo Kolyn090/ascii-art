@@ -69,7 +69,7 @@ python edge_trace.py --image_path ./contour/contour_180_260.png --resize_factor 
 
 **If you want to preserve character anti-aliasing**:
 ```commandline
-python edge_trace.py --image_path ./contour/contour_180_260.png --resize_factor 4 --palette_path ../../resource/palette_files/palette_chars.json --match_method slow --smoothing
+python edge_trace.py --image_path ./contour/contour_180_260.png --resize_factor 4 --palette_path ../../resource/palette_files/palette_chars.json --match_method slow --antialiasing
 ```
 
 **Parameters**
@@ -96,7 +96,7 @@ python edge_trace.py --image_path ./contour/contour_180_260.png --resize_factor 
 | --original_image_path | REQUIRED if you are doing `color_option=original`.                                                                     |
 | --save_ascii          | If included, the characters will be saved to a file.                                                                   |
 | --save_ascii_path     | The path to save the characters. Check out the 'ascii_output' folder for the results.                                  |
-| --smoothing           | If included, retain anti-aliasing of the characters.                                                                   |
+| --antialiasing           | If included, retain anti-aliasing of the characters.                                                                   |
 
 **resize_method**
 
@@ -192,7 +192,7 @@ python joined_trace.py ^
 | --color_option         | The option to color the image. Check below for available options.                                                      |
 | --save_ascii           | If included, the characters will be saved to a file.                                                                   |
 | --save_ascii_path      | The path to save the characters. Check out the 'ascii_output' folder for the results.                                  |
-| --smoothing            | If included, retain anti-aliasing of the characters.                                                                   |
+| --antialiasing            | If included, retain anti-aliasing of the characters.                                                                   |
 
 **resize_method**
 

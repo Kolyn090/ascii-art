@@ -16,8 +16,8 @@ class EdgeGradientWriter:
     def __init__(self,
                  templates: list[PaletteTemplate],
                  max_workers: int,
-                 smoothing: bool):
-        self.gradient_writer = GradientWriter(templates, max_workers, smoothing)
+                 antialiasing: bool):
+        self.gradient_writer = GradientWriter(templates, max_workers, antialiasing)
 
     def assign_gradient_imgs(self, img_gray: np.ndarray,
                              sigmaX: float,

@@ -29,7 +29,7 @@ class PaletteTemplate:
         self.override_widths = override_widths
         self.override_weights = override_weights
 
-    def create_writer(self, max_workers: int, smoothing: bool) -> Writer:
+    def create_writer(self, max_workers: int, antialiasing: bool) -> Writer:
         return Writer(
             image_font=self.image_font,
             max_workers=max_workers,
@@ -40,10 +40,10 @@ class PaletteTemplate:
             chars=self.chars,
             override_widths=self.override_widths,
             override_weights=self.override_weights,
-            smoothing=smoothing
+            antialiasing=antialiasing
         )
 
-    def create_flow_writer(self, max_workers: int, smoothing: bool) -> FlowWriter:
+    def create_flow_writer(self, max_workers: int, antialiasing: bool) -> FlowWriter:
         return FlowWriter(
             chars=self.chars,
             char_bound=self.char_bound,

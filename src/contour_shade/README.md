@@ -38,7 +38,7 @@ python contour_shade.py --image_path ../../resource/imgs/tsunami.jpg --resize_fa
 | --color_option     | The option to color the image. Check below for available options.                                                         |
 | --save_ascii       | If included, the characters will be saved to a file.                                                                      |
 | --save_ascii_path  | The path to save the characters. Check out the 'ascii_output' folder for the results.                                     |
-| --smoothing        | If included, retain anti-aliasing of the characters.                                                                      |
+| --antialiasing        | If included, retain anti-aliasing of the characters.                                                                      |
 
 **resize_method**
 

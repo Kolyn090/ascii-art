@@ -36,7 +36,7 @@ def main():
     parser.add_argument('--color_option', type=str, default='')
     parser.add_argument('--save_ascii', action='store_true')
     parser.add_argument('--save_ascii_path', type=str, default='./')
-    parser.add_argument('--smoothing', action='store_true')
+    parser.add_argument('--antialiasing', action='store_true')
 
     args = parser.parse_args()
 
@@ -49,7 +49,7 @@ def main():
     img = to_grayscale(img)
     h, w = img.shape[:2]
 
-    eg_writer = EdgeGradientWriter(templates, args.max_workers, args.smoothing)
+    eg_writer = EdgeGradientWriter(templates, args.max_workers, args.antialiasing)
     eg_writer.assign_gradient_imgs(img,
                                     args.sigmaX,
                                     args.thresholds_gamma,

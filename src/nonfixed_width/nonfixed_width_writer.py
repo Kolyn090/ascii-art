@@ -17,14 +17,14 @@ class NonFixedWidthWriter:
                  palettes: list[PaletteTemplate],
                  gradient_imgs: list[np.ndarray],
                  max_workers=16,
-                 smoothing=False):
+                 antialiasing=False):
         self.palettes = palettes
         self.max_workers = max_workers
         self.gradient_imgs = gradient_imgs
         self.layers: list[list[PositionalCharTemplate]] = []
         self.using_char_templates: set[CharTemplate] = set()
         self.char_weights = self._get_char_weights()
-        self.smoothing = smoothing
+        self.antialiasing = antialiasing
 
         # Debug
         self.transitional_imgs: list[np.ndarray] = []
@@ -37,7 +37,7 @@ class NonFixedWidthWriter:
             palette = self.palettes[i]
             gradient_img = self.gradient_imgs[i]
             gradient_img = invert_image(gradient_img)
-            flow_writer = palette.create_flow_writer(self.max_workers, self.smoothing)
+            flow_writer = palette.create_flow_writer(self.max_workers, self.antialiasing)
             img, p_cts = flow_writer.match(gradient_img)
             img = invert_image(img)
 
@@ -84,7 +84,7 @@ class NonFixedWidthWriter:
             p_cts = [p_ct for p_ct, _, _ in tiling]
             converted_p_cts = [PositionalCharTemplate(p_ct.char_template, (s, y)) for p_ct, s, _ in tiling]
             result_p_cts.extend(converted_p_cts)
-            imgs = [p_ct.char_template.img if self.smoothing else p_ct.char_template.img_binary for p_ct in p_cts]
+            imgs = [p_ct.char_template.img if self.antialiasing else p_ct.char_template.img_binary for p_ct in p_cts]
             horizontal = FlowWriter.concat_images_left_to_right(imgs)
             horizontals.append(horizontal)
         final_img = FlowWriter.concat_images_top_to_bottom(horizontals, (255, 255, 255))
@@ -151,6 +151,7 @@ class NonFixedWidthWriter:
         pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]] = self._build_position_maps(row_layers)
         begin = 0
 
+        # Debugging
         # for pos_map in pos_maps:
         #     self._is_overlay_continuous(pos_map)
 
