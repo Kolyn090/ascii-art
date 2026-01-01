@@ -1,6 +1,8 @@
 import math
 from typing import Callable
+
 from static import *
+from char_template import PositionalCharTemplate
 
 class PositionalColor:
     def __init__(self, color: np.ndarray, position: tuple[int, int]):
@@ -91,6 +93,26 @@ def process_image_blocks(img: np.ndarray,
 
     output = output[0:math.floor(h / cell_size[1]) * cell_size[1],
                     0:math.floor(w / cell_size[0]) * cell_size[0]]
+    return output, p_cs
+
+def process_image_blocks_nonfixed_width(img: np.ndarray,
+                                        p_cts: list[PositionalCharTemplate],
+                                        block_func: Callable[[np.ndarray], np.ndarray]) \
+        -> tuple[np.ndarray, list[PositionalColor]]:
+    p_cs: list[PositionalColor] = []
+    output = img.copy()
+
+    for p_ct in p_cts:
+        top_left = p_ct.top_left
+        x, y = top_left
+        cell_w, cell_h = p_ct.char_template.char_bound
+        block = img[y:y + cell_h, x:x + cell_w]
+        processed_block = block_func(block)
+        color = processed_block[0, 0]
+        p_cs.append(PositionalColor(color, (x, y)))
+        # Ensure processed block has the same size
+        output[y:y + cell_h, x:x + cell_w] = processed_block
+
     return output, p_cs
 
 def average_color_block(block: np.ndarray) -> np.ndarray:
