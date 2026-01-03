@@ -115,6 +115,36 @@ def validate_palettes(palettes: list[PaletteTemplate]):
 
     print("All tests passed for palettes.")
 
+def are_palettes_fixed_width(palettes: list[PaletteTemplate]) -> bool:
+    if len(palettes) == 0:
+        return True
+
+    # Assume heights are already the same, so don't check for that
+
+    # Trying to find a reference width
+    palette0 = palettes[0]
+    char_bound_width = palette0.char_bound[0]
+    if palette0.override_widths is not None:
+        for char, width in palette0.override_widths.items():
+            if width > 0:
+                char_bound_width = width
+                break
+    char_bound_width += 2 * palette0.pad[0]  # Use this as the standard width
+    for palette in palettes:
+        curr_width = palette.char_bound[0] + 2 * palette.pad[0]
+        if palette.override_widths is None:
+            if curr_width != char_bound_width:
+                return False
+        else:
+            for char, curr_width in palette.override_widths.items():
+                if curr_width <= 0:
+                    return False
+                else:
+                    width = curr_width + 2 * palette.pad[0]
+                    if width != char_bound_width:
+                        return False
+    return True
+
 def test():
     palette_path = '../../resource/palette_files/jx_files/palette_test.json'
     with open(palette_path, 'r', encoding='utf-8') as f:
@@ -144,5 +174,21 @@ def test_invalid():
 
     validate_palettes(palettes)
 
+def test_are_fixed_width():
+    from pathlib import Path
+    path = "../../resource/palette_files"
+    json_files = list(Path(path).rglob("*.json"))
+    for palette_path in json_files:
+        with open(palette_path, 'r', encoding='utf-8') as f:
+            content = json.load(f)
+            templates = content["templates"]
+            palettes = []
+            for template in templates:
+                palette = PaletteTemplate.read_from_json(template)
+                palettes.append(palette)
+            are_fixed = are_palettes_fixed_width(palettes)
+            msg = "fixed" if are_fixed else "not fixed"
+            print(f"{palette_path} is {msg}.")
+
 if __name__ == '__main__':
-    test()
+    test_are_fixed_width()
