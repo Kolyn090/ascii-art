@@ -3,7 +3,6 @@ import sys
 import time
 
 import cv2
-import math
 import argparse
 import numpy as np
 from PIL import ImageFont
@@ -63,7 +62,8 @@ def main():
     img = TraceArgUtil.resize(args.resize_method, img, args.resize_factor)
 
     slicer = Slicer(args.max_workers)
-    cells = slicer.slice(img, template.char_bound)
+    padded_char_bound = (template.char_bound[0] + 2*template.pad[0], template.char_bound[1] + 2*template.pad[1])
+    cells = slicer.slice(img, padded_char_bound)
     writer = template.create_writer(args.max_workers, args.antialiasing)
     converted, p_cts = writer.match_cells(cells)
 

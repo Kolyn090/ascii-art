@@ -36,7 +36,8 @@ class GradientWriter:
             img = self.gradient_imgs[i]
             img = invert_image(img)
             slicer = Slicer()
-            cells = slicer.slice(img, self.templates[i].char_bound)
+            padded_char_bound = self._make_padded_char_bound(self.templates[i].char_bound, template.pad)
+            cells = slicer.slice(img, padded_char_bound)
             matched_img, p_cts = writer.match_cells(cells)
             self.writer = writer
             h, w = matched_img.shape[:2]
@@ -44,6 +45,10 @@ class GradientWriter:
 
         stacks = self.stack(p_ct_lists)
         return self.stack_to_img(stacks, w, h), stacks
+
+    @staticmethod
+    def _make_padded_char_bound(char_bound: tuple[int, int], pad: tuple[int, int]) -> tuple[int, int]:
+        return char_bound[0] + 2 * pad[0], char_bound[1] + 2 * pad[1]
 
     def stack_to_img(self, p_cts: list[PositionalCharTemplate], w: int, h: int) \
             -> np.ndarray:

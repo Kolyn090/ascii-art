@@ -7,7 +7,6 @@ import argparse
 from eg_writer import EdgeGradientWriter
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
-from slicer import Slicer  # type: ignore
 from writer import Writer  # type: ignore
 from static import invert_image, increase_contrast, to_grayscale, smooth_colors  # type: ignore
 from arg_util import ShadeArgUtil, ColorArgUtil, TraceArgUtil  # type: ignore

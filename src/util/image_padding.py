@@ -50,6 +50,7 @@ def np_pad_rows(img: np.ndarray, num: int, color=255) -> np.ndarray:
 
     return out
 
+# This is outer padding
 def pad_cells(cells: list[Cell], pad: tuple[int, int], pad_color: int) -> tuple[list[Cell], int, int]:
     curr_top_left_x = 0
     curr_top_left_y = -2*pad[1] - cells[0].img.shape[0]

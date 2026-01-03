@@ -54,13 +54,26 @@ class Writer:
         return self._get_most_similar_fast
 
     def match_cells(self, cells: list[Cell]) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
-        cells = sorted(cells, key=lambda obj: (obj.top_left[1], obj.top_left[0]))
-        cells, h, w = pad_cells(cells, self.pad, 255)
+        # cells = sorted(cells, key=lambda obj: (obj.top_left[1], obj.top_left[0]))
+        # cells, h, w = pad_cells(cells, self.pad, 255)
+        h, w = self._determine_cells_size(cells)
 
         result_img = np.zeros((h, w, 3), dtype=np.uint8)
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             char_templates = list(executor.map(lambda cell: self._paste_to_img(cell, result_img), cells))
         return result_img, char_templates
+
+    @staticmethod
+    def _determine_cells_size(cells: list[Cell]) -> tuple[int, int]:
+        """
+        h, w
+        :param cells:
+        :return:
+        """
+        cells = sorted(cells, key=lambda obj: (obj.top_left[1], obj.top_left[0]))
+        last_cell = cells[-1]
+        cell_h, cell_w = last_cell.img.shape[:2]
+        return last_cell.top_left[1] + cell_h, last_cell.top_left[0] + cell_w
 
     def _paste_to_img(self, cell: Cell, result_img: np.ndarray) -> PositionalCharTemplate:
         """
