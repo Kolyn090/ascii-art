@@ -53,6 +53,10 @@ def resize_bilinear(img: np.ndarray,
     resized = cv2.resize(img, new_size, interpolation=cv2.INTER_LINEAR)
     return resized
 
+def resize_exact(source: np.ndarray, target: np.ndarray) -> np.ndarray:
+    h, w = source.shape[:2]
+    return cv2.resize(target, (w, h), interpolation=cv2.INTER_LINEAR)
+
 def increase_contrast(img: np.ndarray,
                       contrast_factor: float,
                       window_size=(8, 8)) -> np.ndarray:

@@ -33,8 +33,8 @@ class EdgeGradientWriter:
                                                     gx=gx,
                                                     gy=gy)
 
-    def match(self, w: int, h: int) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
-        return self.gradient_writer.match(w, h)
+    def match(self) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
+        return self.gradient_writer.match()
 
 def test():
     factor = 4
@@ -58,7 +58,6 @@ def test():
     img = resize_bilinear(img, factor)
     img = smooth_colors(img, sigma_s=10, sigma_r=1.5)
     img = to_grayscale(img)
-    h, w = img.shape[:2]
 
     # if save_to_folder:
     #     cv2.imwrite(os.path.join(save_folder, "img.png"), img)
@@ -67,14 +66,14 @@ def test():
     for template in templates:
         template.match_method = 'slow'
 
-    eg_writer = EdgeGradientWriter(templates, max_workers=16)
+    eg_writer = EdgeGradientWriter(templates, max_workers=16, antialiasing=False)
     eg_writer.assign_gradient_imgs(img, sigmaX, thresholds_gamma, ksize, gx, gy)
 
     for i in range(len(eg_writer.gradient_writer.gradient_imgs)):
         if save_to_folder:
             cv2.imwrite(os.path.join(save_folder, f"gradient_{i}.png"), eg_writer.gradient_writer.gradient_imgs[i])
 
-    converted = eg_writer.match(w, h)
+    converted = eg_writer.match()
     if save_to_folder:
         cv2.imwrite(os.path.join(save_folder, "test.png"), converted)
 

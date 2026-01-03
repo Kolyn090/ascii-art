@@ -7,8 +7,9 @@ import argparse
 from gradient_writer import GradientWriter
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
-from static import (resize_nearest_neighbor, resize_bilinear, invert_image,   # type: ignore
-                    floor_fill, increase_contrast, to_grayscale, smooth_colors)  # type: ignore
+from static import (resize_nearest_neighbor, resize_bilinear, invert_image,  # type: ignore
+                    floor_fill, increase_contrast, to_grayscale, smooth_colors,  # type: ignore
+                    resize_exact)  # type: ignore
 from arg_util import ShadeArgUtil, ColorArgUtil, TraceArgUtil  # type: ignore
 from ascii_writer import AsciiWriter  # type: ignore
 from color_util import reassign_positional_colors  # type: ignore
@@ -37,22 +38,18 @@ def main():
 
     templates = ShadeArgUtil.get_palette_json(args.palette_path)
     img = cv2.imread(args.image_path)
-    img = TraceArgUtil.resize(args.resize_method, img, args.resize_factor)
     o_img = img.copy()
+    img = TraceArgUtil.resize(args.resize_method, img, args.resize_factor)
     img = increase_contrast(img, args.contrast_factor)
     img = smooth_colors(img, sigma_s=args.sigma_s, sigma_r=args.sigma_r)
     img = to_grayscale(img)
-    h, w = img.shape[:2]
 
     gradient_writer = GradientWriter(templates, args.max_workers, args.antialiasing)
     gradient_writer.assign_gradient_imgs(img, args.thresholds_gamma)
-    converted, p_cts = gradient_writer.match(w, h)
+    converted, p_cts = gradient_writer.match()
 
-    h, w = converted.shape[:2]
-    o_img = cv2.resize(o_img, (w, h), interpolation=cv2.INTER_LINEAR)
-    # large_char_bound = p_cts[0].char_template.char_bound
+    o_img = resize_exact(converted, o_img)
     large_char_bound = gradient_writer.get_large_char_bound()
-    # print(large_char_bound)
     color_result = ColorArgUtil.color_image(args.color_option,
                                             converted,
                                             o_img,

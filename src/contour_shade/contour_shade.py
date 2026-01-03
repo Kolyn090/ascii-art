@@ -47,7 +47,6 @@ def main():
     img = increase_contrast(img, args.contrast_factor)
     img = smooth_colors(img, sigma_s=args.sigma_s, sigma_r=args.sigma_r)
     img = to_grayscale(img)
-    h, w = img.shape[:2]
 
     eg_writer = EdgeGradientWriter(templates, args.max_workers, args.antialiasing)
     eg_writer.assign_gradient_imgs(img,
@@ -56,7 +55,7 @@ def main():
                                     args.ksize,
                                     args.gx,
                                     args.gy)
-    converted, p_cts = eg_writer.match(w, h)
+    converted, p_cts = eg_writer.match()
     converted = invert_image(converted)
 
     large_char_bound = eg_writer.gradient_writer.get_large_char_bound()

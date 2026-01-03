@@ -1,3 +1,5 @@
+import os
+import sys
 from arg_util import ShadeArgUtil
 from color_util import *
 
@@ -24,7 +26,7 @@ def test_color():
     gradient_writer = GradientWriter(templates, max_workers=16)
     gradient_writer.assign_gradient_imgs(ascii_img, thresholds_gamma)
 
-    ascii_img = gradient_writer.match(w, h)
+    ascii_img = gradient_writer.match()
     converted = blend_ascii_with_color(ascii_img, color_converted, 0.5)
     converted = copy_black_pixels(ascii_img, converted)
     os.makedirs('test', exist_ok=True)

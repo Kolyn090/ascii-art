@@ -13,7 +13,7 @@ from slicer import Slicer  # type: ignore
 from writer import Writer  # type: ignore
 from arg_util import TraceArgUtil, ShadeArgUtil, ColorArgUtil  # type: ignore
 from palette_template import PaletteTemplate  # type: ignore
-from static import invert_image  # type: ignore
+from static import invert_image, resize_exact  # type: ignore
 from color_util import reassign_positional_colors  # type: ignore
 from ascii_writer import AsciiWriter  # type: ignore
 
@@ -39,6 +39,8 @@ def main():
     parser.add_argument('--vector_top_k', type=int, default=-1)
     parser.add_argument('--color_option', type=str, default='')
     parser.add_argument('--original_image_path', type=str, default='')
+    parser.add_argument('--pad_width', type=int, default=0)
+    parser.add_argument('--pad_height', type=int, default=0)
 
     # Including, can be overridden with explicit arguments:
     # chars
@@ -59,27 +61,20 @@ def main():
 
     img = cv2.imread(args.image_path)
     img = TraceArgUtil.resize(args.resize_method, img, args.resize_factor)
-    h, w = img.shape[:2]
 
     slicer = Slicer(args.max_workers)
-    char_bound_width = template.char_bound[0]
-    char_bound_height = template.char_bound[1]
-    cells = slicer.slice(img, (char_bound_width, char_bound_height))
+    cells = slicer.slice(img, template.char_bound)
     writer = template.create_writer(args.max_workers, args.antialiasing)
-    converted, p_cts = writer.match_cells(cells, w, h)
-    converted = converted[0:math.floor(h / char_bound_height) * char_bound_height,
-                          0:math.floor(w / char_bound_width) * char_bound_width]
-    # converted = invert_image(converted)
+    converted, p_cts = writer.match_cells(cells)
 
     original_img = get_original_image(args)
     if original_img is not None:
-        original_img = original_img[0:math.floor(h / char_bound_height) * char_bound_height,
-                                    0:math.floor(w / char_bound_width) * char_bound_width]
+        original_img = resize_exact(converted, original_img)
 
     color_result = ColorArgUtil.color_image(args.color_option,
                                             converted,
                                             original_img,
-                                            (char_bound_width, char_bound_height),
+                                            template.char_bound,
                                             antialiasing=args.antialiasing)
     color_blocks = None
     p_cs = []
@@ -98,7 +93,7 @@ def main():
         reassign_positional_colors(p_cs, color_blocks)
         ascii_writer = AsciiWriter(p_cts,
                                    p_cs,
-                                   int(converted.shape[:2][1]/char_bound_width),
+                                   int(converted.shape[:2][1]/template.char_bound[0]),
                                    args.save_ascii_path)
         ascii_writer.save()
 
@@ -118,7 +113,8 @@ def assemble_template(args) -> PaletteTemplate | None:
             char_bound=(args.char_bound_width, args.char_bound_height),
             approx_ratio=args.approx_ratio,
             vector_top_k=args.vector_top_k,
-            match_method=args.match_method
+            match_method=args.match_method,
+            pad=(args.pad_width, args.pad_height)
         )
         return template
 
@@ -154,9 +150,7 @@ def get_original_image(args) -> np.ndarray | None:
     original_img_path = args.original_image_path
     if not os.path.exists(original_img_path):
         return None
-    img = cv2.imread(original_img_path)
-    img = TraceArgUtil.resize(args.resize_method, img, args.resize_factor)
-    return img
+    return cv2.imread(original_img_path)
 
 if __name__ == '__main__':
     main()

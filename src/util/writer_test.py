@@ -56,7 +56,7 @@ def test_match_cells():
     for method in test_methods:
         writer.get_most_similar = writer.get_matching_method(method)
         start = time.perf_counter()
-        converted = writer.match_cells(cells, w, h)[0]
+        converted = writer.match_cells(cells)[0]
         elapsed = time.perf_counter() - start
         print(f"{method} Time: {elapsed:.6f} seconds")
         cv2.imwrite(os.path.join(save_folder, f'{method}_converted.png'), converted)

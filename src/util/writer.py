@@ -53,15 +53,9 @@ class Writer:
                 return self._get_most_similar_vector
         return self._get_most_similar_fast
 
-    def match_cells(self, cells: list[Cell],
-                    w: int, h: int) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
+    def match_cells(self, cells: list[Cell]) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
         cells = sorted(cells, key=lambda obj: (obj.top_left[1], obj.top_left[0]))
-        # original_cells = cells.copy()
         cells, h, w = pad_cells(cells, self.pad, 255)
-        cv2.imwrite("cell0.png", cells[0].img)
-        # for cell, original in zip(cells, original_cells):
-        #     print(cell.top_left, original.top_left, cell.img.shape)
-        # print(h, w)
 
         result_img = np.zeros((h, w, 3), dtype=np.uint8)
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:

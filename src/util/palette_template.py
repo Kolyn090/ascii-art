@@ -87,7 +87,7 @@ class PaletteTemplate:
             obj["approx_ratio"],
             obj["vector_top_k"],
             obj["match_method"],
-            (obj["pad_horizontal"], obj["pad_vertical"]),
+            (obj["pad_width"], obj["pad_height"]),
             override_widths,
             override_weights
         )

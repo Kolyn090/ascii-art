@@ -1,8 +1,5 @@
 import os
 import sys
-import math
-
-import cv2
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 
@@ -30,7 +27,7 @@ class GradientWriter:
     def assign_gradient_imgs(self, img_gray: np.ndarray, thresholds_gamma: float):
         self.gradient_imgs = divide(img_gray, len(self.templates), thresholds_gamma)
 
-    def match(self, w: int, h: int) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
+    def match(self) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
         p_ct_lists: list[list[PositionalCharTemplate]] = []
         h, w = 0, 0
         for i in range(len(self.templates)):
@@ -40,9 +37,7 @@ class GradientWriter:
             img = invert_image(img)
             slicer = Slicer()
             cells = slicer.slice(img, self.templates[i].char_bound)
-            h, w = img.shape[:2]
-            matched_img, p_cts = writer.match_cells(cells, w, h)
-            # cv2.imwrite(f"matched_{i}.png", matched_img)
+            matched_img, p_cts = writer.match_cells(cells)
             self.writer = writer
             h, w = matched_img.shape[:2]
             p_ct_lists.append(p_cts)
@@ -59,9 +54,9 @@ class GradientWriter:
             list(executor.map(lambda cell: self._paste_to_img(cell, result_img, self.antialiasing), stacks))
 
         result_img = invert_image(result_img)
-        large_char_bound = self.get_large_char_bound()
-        result_img = result_img[0:math.floor(h / large_char_bound[1]) * large_char_bound[1],
-                     0:math.floor(w / large_char_bound[0]) * large_char_bound[0]]
+        # large_char_bound = self.get_large_char_bound()
+        # result_img = result_img[0:math.floor(h / large_char_bound[1]) * large_char_bound[1],
+        #              0:math.floor(w / large_char_bound[0]) * large_char_bound[0]]
         return result_img
 
     def get_large_char_bound(self) -> tuple[int, int]:

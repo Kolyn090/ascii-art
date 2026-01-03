@@ -96,7 +96,9 @@ python edge_trace.py --image_path ./contour/contour_180_260.png --resize_factor 
 | --original_image_path | REQUIRED if you are doing `color_option=original`.                                                                     |
 | --save_ascii          | If included, the characters will be saved to a file.                                                                   |
 | --save_ascii_path     | The path to save the characters. Check out the 'ascii_output' folder for the results.                                  |
-| --antialiasing           | If included, retain anti-aliasing of the characters.                                                                   |
+| --antialiasing        | If included, retain anti-aliasing of the characters.                                                                   |
+| --pad_width           | Add padding around every character vertically.                                                                         |
+| --pad_height          | Add padding around every character horizontally.                                                                       |
 
 **resize_method**
 

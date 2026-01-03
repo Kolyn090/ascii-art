@@ -10,7 +10,7 @@ from contour import contour
 from edge_trace import assemble_template
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
-from static import increase_contrast, invert_image  # type: ignore
+from static import increase_contrast, invert_image, resize_exact  # type: ignore
 from slicer import Slicer  # type: ignore
 from char_template import PositionalCharTemplate  # type: ignore
 from writer import Writer  # type: ignore
@@ -105,28 +105,22 @@ def trace_join(contour1: np.ndarray, contour2: np.ndarray,
                template: PaletteTemplate, original_img: np.ndarray, args):
     contour1 = TraceArgUtil.resize(args.resize_method, contour1, args.resize_factor)
     contour2 = TraceArgUtil.resize(args.resize_method, contour2, args.resize_factor)
-    h, w = contour1.shape[:2]
 
     slicer = Slicer(args.max_workers)
-    char_bound_width = template.char_bound[0]
-    char_bound_height = template.char_bound[1]
-    cells1 = slicer.slice(contour1, (char_bound_width, char_bound_height))
-    cells2 = slicer.slice(contour2, (char_bound_width, char_bound_height))
+    cells1 = slicer.slice(contour1, template.char_bound)
+    cells2 = slicer.slice(contour2, template.char_bound)
 
     writer = template.create_writer(args.max_workers, args.antialiasing)
-    converted1, p_cts1 = writer.match_cells(cells1, w, h)
-    converted1 = converted1[0:math.floor(h / char_bound_height) * char_bound_height,
-                            0:math.floor(w / char_bound_width) * char_bound_width]
-    converted2, p_cts2 = writer.match_cells(cells2, w, h)
+    converted1, p_cts1 = writer.match_cells(cells1)
+    converted2, p_cts2 = writer.match_cells(cells2)
 
     original_img = TraceArgUtil.resize(args.resize_method, original_img, args.resize_factor)
-    original_img = original_img[0:math.floor(h / char_bound_height) * char_bound_height,
-                                0:math.floor(w / char_bound_width) * char_bound_width]
-    # converted1 = invert_image(converted1)
+    if original_img is not None:
+        original_img = resize_exact(converted1, original_img)
     color_result1 = ColorArgUtil.color_image(args.color_option,
                                              converted1,
                                              original_img,
-                                             (char_bound_width, char_bound_height))
+                                             template.char_bound)
     color_blocks1 = None
     p_cs1 = []
     if color_result1 is not None:
@@ -140,13 +134,14 @@ def trace_join(contour1: np.ndarray, contour2: np.ndarray,
     color_blocks = color_blocks1
 
     gradient_writer = GradientWriter([template], args.max_workers, args.antialiasing)
+    h, w = original_img.shape[:2]
     converted = gradient_writer.stack_to_img(stacked, w, h)
     converted = invert_image(converted)
 
     color_result = ColorArgUtil.color_image(args.color_option,
                                                converted,
                                                original_img,
-                                               (char_bound_width, char_bound_height),
+                                               template.char_bound,
                                                antialiasing=args.antialiasing)
 
     if color_result is not None:
