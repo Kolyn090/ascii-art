@@ -30,7 +30,7 @@ class FlowWriter:
                  maximum_char_width=60,
                  max_workers=16,
                  antialiasing=False):
-        self.char_bound = char_bound
+        self.char_bound = (char_bound[0] + 2*pad[0], char_bound[1] + 2*pad[1])
         self.override_widths = override_widths
         self.override_weights = override_weights
         self.image_font = image_font
@@ -236,9 +236,8 @@ class FlowWriter:
             final_bound = (img.size[0], char_bound[1])
 
         template = np.array(img)
-        template = np_pad_rows(template, self.pad[1], 255)
         template = np_pad_columns(template, self.pad[0], 255)
-        final_bound = (final_bound[0] + 2 * self.pad[1], final_bound[1] + 2 * self.pad[0])
+        final_bound = (final_bound[0] + 2 * self.pad[0], final_bound[1])
         template_binary = to_binary_strong(template)
         template_small = template_binary
         template_small = to_binary_strong(template_small)

@@ -32,7 +32,7 @@ def test():
     original_img = image.copy()
     image = to_grayscale(image)
 
-    palettes = ShadeArgUtil.get_palette_json('../../resource/palette_files/jx_files/palette_test.json')
+    palettes = ShadeArgUtil.get_palette_json('../../resource/palette_files/jx_files/palette_test_padded.json')
     gradient_imgs = divide(image, len(palettes), thresholds_gamma)
     nfww = NonFixedWidthWriter(palettes,
                                gradient_imgs,
