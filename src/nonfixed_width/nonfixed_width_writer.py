@@ -60,20 +60,19 @@ class NonFixedWidthWriter:
             for j in range(len(flow_writer.char_templates)):
                 ct = flow_writer.char_templates[j]
                 char = ct.char
-                width = ct.char_bound[0]
-                if (char, width) not in self.char_weights:
-                    self.char_weights[(char, width)] = j * 2 + i
+                if char not in self.char_weights:
+                    self.char_weights[char] = j * 2 + i
 
             self.transitional_imgs.append(img)
             self.layers.append(p_cts)
             using_char_templates.extend(flow_writer.char_templates)
         self.using_char_templates = set(using_char_templates)
 
-    def _get_char_weights(self) -> dict[tuple[str, int], float]:
+    def _get_char_weights(self) -> dict[str, float]:
         char_weights = dict()
 
         for palette in self.palettes:
-            weights: dict[tuple[str, int], float] = palette.override_weights
+            weights: dict[str, float] = palette.override_weights
             if weights is not None:
                 for key, val in weights.items():
                     if key not in char_weights:
@@ -293,10 +292,10 @@ class NonFixedWidthWriter:
         char_weights = self.char_weights
         using_char_templates = self.using_char_templates
         # Get best filling choices
-        items_a: list[Item] = [Item(ct, char_weights[(ct.char, ct.char_bound[0])] if (ct.char, ct.char_bound[0])
+        items_a: list[Item] = [Item(ct, char_weights[ct.char] if ct.char
                                in char_weights else 1, ct.char_bound[0]) for ct
                                in using_char_templates]
-        items_b: list[Item] = [Item(ct, char_weights[(ct.char, ct.char_bound[0])] if (ct.char, ct.char_bound[0])
+        items_b: list[Item] = [Item(ct, char_weights[ct.char] if ct.char
                                in char_weights else 1, ct.char_bound[0]) for ct
                                in references]
         C = total_width
@@ -324,9 +323,8 @@ class NonFixedWidthWriter:
                 if s >= best_end:
                     # Determine the value of char
                     char = p_ct.char_template.char
-                    width = p_ct.char_template.char_bound[0]
-                    if (char, width) in char_weights:
-                        char_val = char_weights[(char, width)]
+                    if char in char_weights:
+                        char_val = char_weights[char]
                         if char_val > highest_char_val:
                             highest_char_val = char_val
                             result = s
@@ -457,9 +455,8 @@ class NonFixedWidthWriter:
         for p_ct, s, e in pos_map:
             if s >= begin and e <= over:
                 char = p_ct.char_template.char
-                width = p_ct.char_template.char_bound[0]
-                if (char, width) in char_weight:
-                    result += char_weight[(char, width)]
+                if char in char_weight:
+                    result += char_weight[char]
                     chars.append(char)
         return result, chars
 
