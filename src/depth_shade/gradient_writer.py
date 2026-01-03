@@ -1,6 +1,8 @@
 import os
 import sys
 import math
+
+import cv2
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 
@@ -23,11 +25,14 @@ class GradientWriter:
         self.char_rank: dict[str, int] = dict()
         self.antialiasing = antialiasing
 
+        self.writer = None  # Only useful for fixed-width case
+
     def assign_gradient_imgs(self, img_gray: np.ndarray, thresholds_gamma: float):
         self.gradient_imgs = divide(img_gray, len(self.templates), thresholds_gamma)
 
     def match(self, w: int, h: int) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
         p_ct_lists: list[list[PositionalCharTemplate]] = []
+        h, w = 0, 0
         for i in range(len(self.templates)):
             template = self.templates[i]
             writer = template.create_writer(self.max_workers, self.antialiasing)
@@ -36,7 +41,10 @@ class GradientWriter:
             slicer = Slicer()
             cells = slicer.slice(img, self.templates[i].char_bound)
             h, w = img.shape[:2]
-            _, p_cts = writer.match_cells(cells, w, h)
+            matched_img, p_cts = writer.match_cells(cells, w, h)
+            # cv2.imwrite(f"matched_{i}.png", matched_img)
+            self.writer = writer
+            h, w = matched_img.shape[:2]
             p_ct_lists.append(p_cts)
 
         stacks = self.stack(p_ct_lists)
@@ -57,12 +65,9 @@ class GradientWriter:
         return result_img
 
     def get_large_char_bound(self) -> tuple[int, int]:
-        result_width = 0
-        result_height = 0
-        for template in self.templates:
-            result_width = max(template.char_bound[0], result_width)
-            result_height = max(template.char_bound[1], result_height)
-        return result_width, result_height
+        if self.writer is not None:
+            return self.writer.char_templates[0].char_bound
+        return -1, -1
 
     @staticmethod
     def _paste_to_img(p_ct: PositionalCharTemplate, result_img: np.ndarray, antialiasing: bool):
@@ -78,7 +83,7 @@ class GradientWriter:
         # bottom_right_x = top_left[0] + template.shape[1]
 
         # template: (H, W) or (H, W, 3)
-        h, w = template.shape[:2]
+        cell_h, cell_w = template.shape[:2]
 
         # ensure template has 3 channels
         if template.ndim == 2:  # grayscale
@@ -89,7 +94,7 @@ class GradientWriter:
             raise ValueError(f"Unsupported template shape: {template.shape}")
 
         # paste into result_img
-        result_img[top_left[1]:top_left[1] + h, top_left[0]:top_left[0] + w] = template_to_paste
+        result_img[top_left[1]:top_left[1] + cell_h, top_left[0]:top_left[0] + cell_w] = template_to_paste
 
     def stack(self, p_ct_lists: list[list[PositionalCharTemplate]]) -> list[PositionalCharTemplate]:
         self._assign_template_rank()

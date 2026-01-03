@@ -48,7 +48,11 @@ def main():
     gradient_writer.assign_gradient_imgs(img, args.thresholds_gamma)
     converted, p_cts = gradient_writer.match(w, h)
 
+    h, w = converted.shape[:2]
+    o_img = cv2.resize(o_img, (w, h), interpolation=cv2.INTER_LINEAR)
+    # large_char_bound = p_cts[0].char_template.char_bound
     large_char_bound = gradient_writer.get_large_char_bound()
+    # print(large_char_bound)
     color_result = ColorArgUtil.color_image(args.color_option,
                                             converted,
                                             o_img,

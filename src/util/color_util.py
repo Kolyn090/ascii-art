@@ -91,8 +91,8 @@ def process_image_blocks(img: np.ndarray,
             # Ensure processed block has the same size
             output[y:y + cell_h, x:x + cell_w] = processed_block
 
-    output = output[0:math.floor(h / cell_size[1]) * cell_size[1],
-                    0:math.floor(w / cell_size[0]) * cell_size[0]]
+    # output = output[0:math.floor(h / cell_size[1]) * cell_size[1],
+    #                 0:math.floor(w / cell_size[0]) * cell_size[0]]
     return output, p_cs
 
 def process_image_blocks_nonfixed_width(img: np.ndarray,

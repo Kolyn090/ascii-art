@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from slicer import Cell
 from static import to_binary_strong
 from char_template import CharTemplate, PositionalCharTemplate
+from image_padding import np_pad_rows, np_pad_columns, pad_cells
 
 class Writer:
     def __init__(self,
@@ -20,11 +21,13 @@ class Writer:
                  vector_top_k: int,
                  chars: list[str],
                  antialiasing: bool,
+                 pad: tuple[int, int],
                  override_widths: dict[str, int] | None = None,
                  override_weights: dict[tuple[str, int], float] | None = None):
         self.image_font = image_font
         self.max_workers = max_workers
         self.char_bound = char_bound
+        self.pad = pad
         self.approx_ratio = approx_ratio if approx_ratio > 0 else 0.5
         self.get_most_similar = self.get_matching_method(match_method)
         self.vector_top_k = vector_top_k if vector_top_k > 0 else 5
@@ -52,6 +55,14 @@ class Writer:
 
     def match_cells(self, cells: list[Cell],
                     w: int, h: int) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
+        cells = sorted(cells, key=lambda obj: (obj.top_left[1], obj.top_left[0]))
+        # original_cells = cells.copy()
+        cells, h, w = pad_cells(cells, self.pad, 255)
+        cv2.imwrite("cell0.png", cells[0].img)
+        # for cell, original in zip(cells, original_cells):
+        #     print(cell.top_left, original.top_left, cell.img.shape)
+        # print(h, w)
+
         result_img = np.zeros((h, w, 3), dtype=np.uint8)
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             char_templates = list(executor.map(lambda cell: self._paste_to_img(cell, result_img), cells))
@@ -76,7 +87,7 @@ class Writer:
         # bottom_right_x = top_left[0] + template.shape[1]
 
         # template: (H, W) or (H, W, 3)
-        h, w = template.shape[:2]
+        cell_h, cell_w = template.shape[:2]
 
         # ensure template has 3 channels
         if template.ndim == 2:  # grayscale
@@ -87,7 +98,8 @@ class Writer:
             raise ValueError(f"Unsupported template shape: {template.shape}")
 
         # paste into result_img
-        result_img[top_left[1]:top_left[1] + h, top_left[0]:top_left[0] + w] = template_to_paste
+        # print(top_left[0], top_left[0] + cell_w, cell_w, result_img.shape)
+        result_img[top_left[1]:top_left[1] + cell_h, top_left[0]:top_left[0] + cell_w] = template_to_paste
 
         return PositionalCharTemplate(most_similar, top_left)
 
@@ -248,6 +260,9 @@ class Writer:
         draw.text((0, 0), char, font=self.image_font, fill="black")
 
         template = np.array(img)
+        template = np_pad_rows(template, self.pad[1], 255)
+        template = np_pad_columns(template, self.pad[0], 255)
+        char_bound = (char_bound[0] + 2 * self.pad[0], char_bound[1] + 2 * self.pad[1])
         template_binary = to_binary_strong(template)
         template_small = cv2.resize(template_binary, self.approx_size, interpolation=cv2.INTER_NEAREST)
         template_small = to_binary_strong(template_small)

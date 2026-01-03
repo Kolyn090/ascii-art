@@ -7,7 +7,7 @@ from PIL.ImageFont import FreeTypeFont
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
 from char_template import CharTemplate, PositionalCharTemplate  # type: ignore
 from static import to_binary_middle, to_binary_strong  # type: ignore
-from image_padding import pil_pad_columns  # type: ignore
+from image_padding import pil_pad_columns, np_pad_rows, np_pad_columns  # type: ignore
 
 class FlowWriter:
     """
@@ -232,6 +232,9 @@ class FlowWriter:
             final_bound = (img.size[0], char_bound[1])
 
         template = np.array(img)
+        template = np_pad_rows(template, self.pad[1], 255)
+        template = np_pad_columns(template, self.pad[0], 255)
+        final_bound = (final_bound[0] + 2 * self.pad[1], final_bound[1] + 2 * self.pad[0])
         template_binary = to_binary_strong(template)
         template_small = template_binary
         template_small = to_binary_strong(template_small)
