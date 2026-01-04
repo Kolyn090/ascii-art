@@ -7,8 +7,7 @@
       "font": "C:/Windows/Fonts/seguisym.ttf",
       "font_size": 24,
       "char_bound_width": 18,
-      "char_bound_height": 28,
-      "match_method": "fast"
+      "char_bound_height": 28
     }
   ]
 }
