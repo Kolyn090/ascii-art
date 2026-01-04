@@ -104,6 +104,10 @@ class NonFixedWidthWriter:
             horizontals.append(horizontal)
         final_img = FlowWriter.concat_images_top_to_bottom(horizontals, (255, 255, 255))
         final_img = invert_image(final_img)
+
+        # Convert final img to 3 channels
+        final_img = np.repeat(final_img[:, :, None], 3, axis=2)
+
         return final_img, result_p_cts
 
     def stack_overlay(self, width: int) -> list[np.ndarray]:
