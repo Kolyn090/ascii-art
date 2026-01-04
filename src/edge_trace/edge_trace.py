@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util
 from slicer import Slicer  # type: ignore
 from writer import Writer  # type: ignore
 from arg_util import TraceArgUtil, ShadeArgUtil, ColorArgUtil  # type: ignore
-from palette_template import PaletteTemplate, are_palettes_fixed_width  # type: ignore
+from palette_template import PaletteTemplate, are_palettes_fixed_width, validate_palettes  # type: ignore
 from static import invert_image, resize_exact  # type: ignore
 from color_util import reassign_positional_colors  # type: ignore
 from ascii_writer import AsciiWriter  # type: ignore
@@ -46,6 +46,8 @@ def main():
     parser.add_argument('--antialiasing', action='store_true')
 
     # For non-fixed width
+    parser.add_argument('--flow_match_method', type=str, default='')
+    parser.add_argument('--binary_threshold', type=int, default=-1)
     parser.add_argument('--reference_num', type=int, default=15)
     parser.add_argument('--max_num_fill_item', type=int, default=10)
     parser.add_argument('--filler_lambda', type=float, default=0.7)
@@ -74,9 +76,11 @@ def main():
     img = cv2.imread(args.image_path)
     img = TraceArgUtil.resize(args.resize_method, img, args.resize_factor)
 
-    are_fixed = are_palettes_fixed_width([template])
+    palettes = [template]
+    validate_palettes(palettes)
+    are_fixed = are_palettes_fixed_width(palettes)
     if not are_fixed:
-        nfww = NonFixedWidthWriter([template],
+        nfww = NonFixedWidthWriter(palettes,
                                    [img],
                                    args.max_workers,
                                    reference_num=args.reference_num,
@@ -142,7 +146,9 @@ def assemble_template(args) -> PaletteTemplate | None:
             approx_ratio=args.approx_ratio,
             vector_top_k=args.vector_top_k,
             match_method=args.match_method,
-            pad=(args.pad_width, args.pad_height)
+            pad=(args.pad_width, args.pad_height),
+            flow_match_method=args.flow_match_method,
+            binary_threshold=args.binary_threshold
         )
         return template
 
@@ -171,6 +177,14 @@ def assemble_template(args) -> PaletteTemplate | None:
     # Override match method, if possible
     if args.match_method != '':
         template.match_method = args.match_method
+
+    # Override flow match method, if possible
+    if args.flow_match_method != '':
+        template.flow_match_method = args.flow_match_method
+
+    # Override binary threshold, if possible
+    if args.binary_threshold != -1:
+        template.binary_threshold = args.binary_threshold
 
     return template
 

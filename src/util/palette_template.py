@@ -14,12 +14,14 @@ class PaletteTemplate:
                  chars: list[str],
                  image_font: FreeTypeFont,
                  char_bound: tuple[int, int],
-                 approx_ratio: float,
-                 vector_top_k: int,
-                 match_method: str,
-                 pad: tuple[int, int],
+                 approx_ratio=1,
+                 vector_top_k=1,
+                 match_method='fast',
+                 pad=(0, 0),
                  override_widths: dict[str, int] | None = None,
-                 override_weights: dict[str, float] | None = None):
+                 override_weights: dict[str, float] | None = None,
+                 flow_match_method='fast',
+                 binary_threshold=90):
         self.layer = layer
         self.chars = chars
         self.image_font = image_font
@@ -29,6 +31,8 @@ class PaletteTemplate:
         self.match_method = match_method
         self.override_widths = override_widths
         self.override_weights = override_weights
+        self.flow_match_method=flow_match_method
+        self.binary_threshold=binary_threshold
         self.pad = pad
 
     def create_writer(self, max_workers: int, antialiasing: bool) -> Writer:
@@ -53,8 +57,8 @@ class PaletteTemplate:
             override_widths=self.override_widths,
             image_font=self.image_font,
             pad=self.pad,
-            flow_match_method='fast',
-            binary_threshold=90,
+            flow_match_method=self.flow_match_method,
+            binary_threshold=self.binary_threshold,
             override_weights=self.override_weights,
             antialiasing=antialiasing,
             max_workers=max_workers
@@ -62,29 +66,57 @@ class PaletteTemplate:
 
     @staticmethod
     def read_from_json(obj: dict):
+        def read_must_have(key: str):
+            if key in obj:
+                return obj[key]
+            raise Exception(f"Error: palette file item missing key '{key}'.")
+
+        # Must-have fields
+        chars = list(dict.fromkeys(c for c in read_must_have("chars") if c != '\n'))
+        font = read_must_have("font")
+        font_size = read_must_have("font_size")
+        char_bound_width = read_must_have("char_bound_width")
+        char_bound_height = read_must_have("char_bound_height")
+
+        # Optional fields
+        def read_optional(key: str, default):
+            if key in obj:
+                return obj[key]
+            return default
+
+        layer=read_optional("layer", 0)
+        approx_ratio=read_optional("approx_ratio", 1)
+        vector_top_k=read_optional("vector_top_k", 5)
+        match_method=read_optional("match_method", 'fast')
+        pad_width=read_optional("pad_width", 0)
+        pad_height=read_optional("pad_height", 0)
         override_widths = None
+        override_weights = None
+        flow_match_method=read_optional("flow_match_method", 'fast')
+        binary_threshold=read_optional("binary_threshold", 90)
+
         if "override_widths" in obj:
             override_widths = dict()
             for item in obj["override_widths"]:
                 override_widths[item["char"]] = item["width"]
-
-        override_weights = None
         if "override_weights" in obj:
             override_weights = dict()
             for item in obj["override_weights"]:
                 override_weights[item["char"]] = item["weight"]
 
         return PaletteTemplate(
-            obj["layer"],
-            list(dict.fromkeys(c for c in obj["chars"] if c != '\n')),
-            ImageFont.truetype(obj["font"], int(obj["font_size"])),
-            (obj["char_bound_width"], obj["char_bound_height"]),
-            obj["approx_ratio"],
-            obj["vector_top_k"],
-            obj["match_method"],
-            (obj["pad_width"], obj["pad_height"]),
-            override_widths,
-            override_weights
+            layer=layer,
+            chars=chars,
+            image_font=ImageFont.truetype(font, int(font_size)),
+            char_bound=(char_bound_width, char_bound_height),
+            approx_ratio=approx_ratio,
+            vector_top_k=vector_top_k,
+            match_method=match_method,
+            pad=(pad_width, pad_height),
+            override_widths=override_widths,
+            override_weights=override_weights,
+            flow_match_method=flow_match_method,
+            binary_threshold=binary_threshold
         )
 
     def __str__(self):
@@ -109,7 +141,40 @@ def validate_palettes(palettes: list[PaletteTemplate]):
         char_bound_height = palette.char_bound[1]
         char_bound_height += palette.pad[1] * 2
         if expected_char_bound_height != char_bound_height:
-            raise Exception("Not all characters have the same valid cell height!")
+            raise Exception("Invalid Palette: Not all characters have the same valid cell height!")
+
+    # 2. Make sure all values are valid
+    def is_greater_than(expected, num):
+        return num >= expected
+
+    def is_strictly_greater_than(expected, num):
+        return num > expected
+
+    def is_within_range(bottom, top, num):
+        return bottom <= num <= top
+
+    comparison_error_msgs = [
+        "Number of characters must be strictly greater than 0.",
+        "Character bound width must be strictly greater than 0.",
+        "Character bound height must be strictly greater than 0.",
+        "Approximate ratio must be between 0 and 1.",
+        "Vector Top K must be strictly greater than 0.",
+        "Binary threshold must be greater than or equal to 0."
+    ]
+
+    for palette in palettes:
+        comparisons = [
+            is_strictly_greater_than(0, len(palette.chars)),
+            is_strictly_greater_than(0, palette.char_bound[0]),
+            is_strictly_greater_than(0, palette.char_bound[1]),
+            is_within_range(0, 1, palette.approx_ratio),
+            is_strictly_greater_than(0, palette.vector_top_k),
+            is_greater_than(0, palette.binary_threshold)
+        ]
+        for i in range(len(comparisons)):
+            comparison = comparisons[i]
+            if not comparison:
+                raise Exception(f"Invalid Palette: {comparison_error_msgs[i]}.")
 
     # Add more rules in the future...
 
@@ -191,4 +256,4 @@ def test_are_fixed_width():
             print(f"{palette_path} is {msg}.")
 
 if __name__ == '__main__':
-    test_are_fixed_width()
+    test()
