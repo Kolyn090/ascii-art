@@ -90,7 +90,7 @@ class ColorArgUtil:
         return color_converted, color_blocks, p_cs
 
 def test():
-    templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_default.json')
+    templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_default_consolab_fast.json')
     for template in templates:
         print(template)
 

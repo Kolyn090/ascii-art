@@ -15,12 +15,15 @@ from slicer import Slicer  # type: ignore
 from char_template import PositionalCharTemplate  # type: ignore
 from writer import Writer  # type: ignore
 from arg_util import TraceArgUtil, ShadeArgUtil, ColorArgUtil  # type: ignore
-from palette_template import PaletteTemplate  # type: ignore
+from palette_template import PaletteTemplate, are_palettes_fixed_width, validate_palettes  # type: ignore
 from ascii_writer import AsciiWriter  # type: ignore
 from color_util import PositionalColor, reassign_positional_colors  # type: ignore
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../depth_shade')))
 from gradient_writer import GradientWriter  # type: ignore
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../nonfixed_width')))
+from nonfixed_width_writer import NonFixedWidthWriter  # type: ignore
 
 def main():
     start = time.perf_counter()
@@ -58,6 +61,17 @@ def main():
     parser.add_argument('--save_ascii', action='store_true')
     parser.add_argument('--save_ascii_path', type=str, default='./')
     parser.add_argument('--antialiasing', action='store_true')
+
+    # For non-fixed width
+    parser.add_argument('--flow_match_method', type=str, default='')
+    parser.add_argument('--binary_threshold', type=int, default=-1)
+    parser.add_argument('--reference_num', type=int, default=15)
+    parser.add_argument('--max_num_fill_item', type=int, default=10)
+    parser.add_argument('--filler_lambda', type=float, default=0.7)
+    parser.add_argument('--char_weight_sum_factor', type=int, default=50)
+    parser.add_argument('--curr_layer_weight_factor', type=int, default=150)
+    parser.add_argument('--offset_mse_factor', type=int, default=10)
+    parser.add_argument('--coherence_score_factor', type=int, default=5)
 
     args = parser.parse_args()
     template = assemble_template(args)
@@ -106,13 +120,47 @@ def trace_join(contour1: np.ndarray, contour2: np.ndarray,
     contour1 = TraceArgUtil.resize(args.resize_method, contour1, args.resize_factor)
     contour2 = TraceArgUtil.resize(args.resize_method, contour2, args.resize_factor)
 
-    slicer = Slicer(args.max_workers)
-    cells1 = slicer.slice(contour1, template.char_bound)
-    cells2 = slicer.slice(contour2, template.char_bound)
+    palettes = [template]
+    validate_palettes(palettes)
+    are_fixed = are_palettes_fixed_width(palettes)
+    if not are_fixed:
+        nfww = NonFixedWidthWriter(
+            palettes,
+            [contour1],
+            args.max_workers,
+            reference_num=args.reference_num,
+            max_num_fill_item=args.max_num_fill_item,
+            filler_lambda=args.filler_lambda,
+            char_weight_sum_factor=args.char_weight_sum_factor,
+            curr_layer_weight_factor=args.curr_layer_weight_factor,
+            offset_mse_factor=args.offset_mse_factor,
+            coherence_score_factor=args.coherence_score_factor,
+            antialiasing=args.antialiasing
+        )
+        converted1, p_cts1 = nfww.stack(contour1.shape[1])
+        nfww = NonFixedWidthWriter(
+            palettes,
+            [contour2],
+            args.max_workers,
+            reference_num=args.reference_num,
+            max_num_fill_item=args.max_num_fill_item,
+            filler_lambda=args.filler_lambda,
+            char_weight_sum_factor=args.char_weight_sum_factor,
+            curr_layer_weight_factor=args.curr_layer_weight_factor,
+            offset_mse_factor=args.offset_mse_factor,
+            coherence_score_factor=args.coherence_score_factor,
+            antialiasing=args.antialiasing
+        )
+        _, p_cts2 = nfww.stack(contour2.shape[1])
+        converted1 = invert_image(converted1)
+    else:
+        slicer = Slicer(args.max_workers)
+        cells1 = slicer.slice(contour1, template.char_bound)
+        cells2 = slicer.slice(contour2, template.char_bound)
 
-    writer = template.create_writer(args.max_workers, args.antialiasing)
-    converted1, p_cts1 = writer.match_cells(cells1)
-    converted2, p_cts2 = writer.match_cells(cells2)
+        writer = template.create_writer(args.max_workers, args.antialiasing)
+        converted1, p_cts1 = writer.match_cells(cells1)
+        _, p_cts2 = writer.match_cells(cells2)
 
     original_img = TraceArgUtil.resize(args.resize_method, original_img, args.resize_factor)
     if original_img is not None:

@@ -211,7 +211,7 @@ def are_palettes_fixed_width(palettes: list[PaletteTemplate]) -> bool:
     return True
 
 def test():
-    palette_path = '../../resource/palette_files/jx_files/palette_test.json'
+    palette_path = '../../resource/palette_files/jx_files/palette_test_6_arial_fast.json'
     with open(palette_path, 'r', encoding='utf-8') as f:
         content = json.load(f)
         name = content["name"]

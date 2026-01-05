@@ -43,7 +43,6 @@ def main():
     parser.add_argument('--original_image_path', type=str, default='')
     parser.add_argument('--pad_width', type=int, default=0)
     parser.add_argument('--pad_height', type=int, default=0)
-    parser.add_argument('--antialiasing', action='store_true')
 
     # For non-fixed width
     parser.add_argument('--flow_match_method', type=str, default='')
@@ -80,17 +79,21 @@ def main():
     validate_palettes(palettes)
     are_fixed = are_palettes_fixed_width(palettes)
     if not are_fixed:
-        nfww = NonFixedWidthWriter(palettes,
-                                   [img],
-                                   args.max_workers,
-                                   reference_num=args.reference_num,
-                                   max_num_fill_item=args.max_num_fill_item,
-                                   filler_lambda=args.filler_lambda,
-                                   char_weight_sum_factor=args.char_weight_sum_factor,
-                                   curr_layer_weight_factor=args.curr_layer_weight_factor,
-                                   offset_mse_factor=args.offset_mse_factor,
-                                   coherence_score_factor=args.coherence_score_factor)
+        nfww = NonFixedWidthWriter(
+            palettes,
+            [img],
+            args.max_workers,
+            reference_num=args.reference_num,
+            max_num_fill_item=args.max_num_fill_item,
+            filler_lambda=args.filler_lambda,
+            char_weight_sum_factor=args.char_weight_sum_factor,
+            curr_layer_weight_factor=args.curr_layer_weight_factor,
+            offset_mse_factor=args.offset_mse_factor,
+            coherence_score_factor=args.coherence_score_factor,
+            antialiasing=args.antialiasing
+        )
         converted, p_cts = nfww.stack(img.shape[1])
+        converted = invert_image(converted)
     else:
         slicer = Slicer(args.max_workers)
         padded_char_bound = (template.char_bound[0] + 2*template.pad[0], template.char_bound[1] + 2*template.pad[1])
@@ -107,7 +110,7 @@ def main():
                                             original_img,
                                             template.char_bound,
                                             antialiasing=args.antialiasing,
-                                            invert_ascii=are_fixed)
+                                            invert_ascii=True)
     color_blocks = None
     p_cs = []
     if color_result is not None:

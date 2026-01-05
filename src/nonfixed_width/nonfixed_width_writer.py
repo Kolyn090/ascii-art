@@ -52,7 +52,7 @@ class NonFixedWidthWriter:
         for i in range(len(self.palettes)):
             palette = self.palettes[i]
             gradient_img = self.gradient_imgs[i]
-            gradient_img = invert_image(gradient_img)
+            # gradient_img = invert_image(gradient_img)
             flow_writer = palette.create_flow_writer(self.max_workers, self.antialiasing)
             img, p_cts = flow_writer.match(gradient_img)
             img = invert_image(img)
@@ -106,7 +106,10 @@ class NonFixedWidthWriter:
         final_img = invert_image(final_img)
 
         # Convert final img to 3 channels
-        final_img = np.repeat(final_img[:, :, None], 3, axis=2)
+        if final_img.ndim == 2:
+            final_img = np.repeat(final_img[:, :, None], 3, axis=2)
+        elif final_img.ndim == 3 and final_img.shape[2] == 1:
+            final_img = np.repeat(final_img, 3, axis=2)
 
         return final_img, result_p_cts
 

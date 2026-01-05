@@ -1,5 +1,6 @@
 import os
 import sys
+from static import resize_exact
 from arg_util import ShadeArgUtil
 from color_util import *
 
@@ -7,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../dept
 from gradient_writer import GradientWriter  # type: ignore
 
 def test_color():
-    resize_factor = 4
+    resize_factor = 2
     thresholds_gamma = 0.3
     img = cv2.imread('../../resource/imgs/monalisa.jpg')
 
@@ -20,13 +21,13 @@ def test_color():
     ascii_img = resize_bilinear(ascii_img, resize_factor)
     ascii_img = smooth_colors(ascii_img, sigma_s=1, sigma_r=0.6)
     ascii_img = to_grayscale(ascii_img)
-    h, w = ascii_img.shape[:2]
 
-    templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_default.json')
-    gradient_writer = GradientWriter(templates, max_workers=16)
+    templates = ShadeArgUtil.get_palette_json('../../resource/palette_files/palette_default_consolab_fast.json')
+    gradient_writer = GradientWriter(templates, max_workers=16, antialiasing=False)
     gradient_writer.assign_gradient_imgs(ascii_img, thresholds_gamma)
 
-    ascii_img = gradient_writer.match()
+    ascii_img, p_cts = gradient_writer.match()
+    color_converted = resize_exact(ascii_img, color_converted)
     converted = blend_ascii_with_color(ascii_img, color_converted, 0.5)
     converted = copy_black_pixels(ascii_img, converted)
     os.makedirs('test', exist_ok=True)

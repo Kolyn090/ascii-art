@@ -1,7 +1,7 @@
 from arg_util import ShadeArgUtil
 
 def test():
-    palettes = ShadeArgUtil.get_palette_json("../../resource/palette_files/jx_files/palette_test.json")
+    palettes = ShadeArgUtil.get_palette_json("../../resource/palette_files/jx_files/palette_test_6_arial_fast.json")
     for palette in palettes:
         print(palette)
 
