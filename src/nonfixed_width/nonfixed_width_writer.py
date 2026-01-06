@@ -45,6 +45,7 @@ class NonFixedWidthWriter:
         # Debug
         self.transitional_imgs: list[np.ndarray] = []
 
+        self.layer_weights: dict[int, float] = dict()  # Index: Weight(can be None)
         self._init_field_vars()
 
     def _init_field_vars(self):
@@ -54,6 +55,14 @@ class NonFixedWidthWriter:
             gradient_img = self.gradient_imgs[i]
             # gradient_img = invert_image(gradient_img)
             flow_writer = palette.create_flow_writer(self.max_workers, self.antialiasing)
+
+            # Update layer weight
+            override_layer_weight: float | None = flow_writer.override_layer_weight
+            if override_layer_weight is not None:
+                self.layer_weights[i] = flow_writer.override_layer_weight
+            else:
+                self.layer_weights[i] = i
+
             img, p_cts = flow_writer.match(gradient_img)
             img = invert_image(img)
 
@@ -177,8 +186,6 @@ class NonFixedWidthWriter:
         # for pos_map in pos_maps:
         #     self._is_overlay_continuous(pos_map)
 
-        layer_weight = {i: i for i in range(len(row_layers))}
-
         last_best_choice = -1
 
         cell_h = pos_maps[0][0][0].char_template.char_bound[1]
@@ -192,7 +199,7 @@ class NonFixedWidthWriter:
 
             best_choice: int = self._find_best_offset_choice(pos_maps,
                                                                begin,
-                                                               layer_weight,
+                                                               self.layer_weights,
                                                                last_indices_spanning_short_imgs,
                                                                last_best_choice)  # This is index of layer
 
@@ -384,7 +391,7 @@ class NonFixedWidthWriter:
             self,
             pos_maps: list[list[tuple[PositionalCharTemplate, int, int]]],
             begin: int,
-            layer_weight: dict[int, int],
+            layer_weight: dict[int, float],
             last_indices_spanning_short_imgs: list[int],
             last_best_choice: int) -> int:
         char_weights = self.char_weights
@@ -442,7 +449,7 @@ class NonFixedWidthWriter:
     def _calculate_choice_score(self,
                                 offset_mse: int,
                                 char_weight_sum: int,
-                                curr_layer_weight: int,
+                                curr_layer_weight: float,
                                 coherence_score) \
             -> float:
         return (char_weight_sum * self.char_weight_sum_factor +

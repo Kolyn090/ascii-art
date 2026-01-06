@@ -21,7 +21,8 @@ class PaletteTemplate:
                  override_widths: dict[str, int] | None = None,
                  override_weights: dict[str, float] | None = None,
                  flow_match_method='fast',
-                 binary_threshold=90):
+                 binary_threshold=90,
+                 override_layer_weight: float | None = None):
         self.layer = layer
         self.chars = chars
         self.image_font = image_font
@@ -34,6 +35,7 @@ class PaletteTemplate:
         self.flow_match_method=flow_match_method
         self.binary_threshold=binary_threshold
         self.pad = pad
+        self.override_layer_weight = override_layer_weight
 
     def create_writer(self, max_workers: int, antialiasing: bool) -> Writer:
         return Writer(
@@ -61,7 +63,8 @@ class PaletteTemplate:
             binary_threshold=self.binary_threshold,
             override_weights=self.override_weights,
             antialiasing=antialiasing,
-            max_workers=max_workers
+            max_workers=max_workers,
+            override_layer_weight=self.override_layer_weight
         )
 
     @staticmethod
@@ -94,6 +97,7 @@ class PaletteTemplate:
         override_weights = None
         flow_match_method=read_optional("flow_match_method", 'fast')
         binary_threshold=read_optional("binary_threshold", 90)
+        override_layer_weight = None
 
         if "override_widths" in obj:
             override_widths = dict()
@@ -103,6 +107,8 @@ class PaletteTemplate:
             override_weights = dict()
             for item in obj["override_weights"]:
                 override_weights[item["char"]] = item["weight"]
+        if "override_layer_weight" in obj:
+            override_layer_weight = obj["override_layer_weight"]
 
         return PaletteTemplate(
             layer=layer,
@@ -116,7 +122,8 @@ class PaletteTemplate:
             override_widths=override_widths,
             override_weights=override_weights,
             flow_match_method=flow_match_method,
-            binary_threshold=binary_threshold
+            binary_threshold=binary_threshold,
+            override_layer_weight=override_layer_weight
         )
 
     def __str__(self):

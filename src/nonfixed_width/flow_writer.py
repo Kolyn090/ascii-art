@@ -29,7 +29,8 @@ class FlowWriter:
                  override_weights: dict[tuple[str, int], float] | None = None,
                  maximum_char_width=60,
                  max_workers=16,
-                 antialiasing=False):
+                 antialiasing=False,
+                 override_layer_weight: float | None = None):
         self.char_bound = (char_bound[0] + 2*pad[0], char_bound[1] + 2*pad[1])
         self.override_widths = override_widths
         self.override_weights = override_weights
@@ -41,6 +42,7 @@ class FlowWriter:
         self.antialiasing = antialiasing
         self.max_workers = max_workers
         self.char_templates = [self._create_char_template(char) for char in chars]
+        self.override_layer_weight = override_layer_weight
 
     def match(self, img: np.ndarray) -> tuple[np.ndarray, list[PositionalCharTemplate]]:
         """
