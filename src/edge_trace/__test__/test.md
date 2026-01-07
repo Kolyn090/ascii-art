@@ -435,3 +435,39 @@ python edge_trace.py ^
 --antialiasing ^
 --color_option original
 ```
+
+---
+
+# Test 11
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./imgs/contour_invert.png" width="400">
+    </td>
+    <td align="center">
+      <img src="./imgs/test_11.png" width="400">
+    </td>
+  </tr>
+</table>
+
+```commandline
+python contour.py ^
+--image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
+--canny1_min 160 --canny1_max 201 --canny1_step 20 ^
+--canny2_min 240 --canny2_max 281 --canny2_step 20 ^
+--dilate_iter 1 --erode_iter 0 --gb_sigmaX 0 --gb_size 5 ^
+--contrast_factor 4 --contrast_window_size 8 ^
+--invert_color
+```
+
+```commandline
+python edge_trace.py ^
+--image_path ./contour/contour_180_260.png ^
+--resize_factor 2 ^
+--palette_path ../../resource/palette_files/palette_chars_nonfix_arial_fast.json ^
+--match_method slow ^
+--original_image_path ../../resource/imgs/girl_with_pearl_earring.jpg ^
+--antialiasing ^
+--color_option original
+```

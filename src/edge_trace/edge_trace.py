@@ -81,7 +81,7 @@ def main():
     if not are_fixed:
         nfww = NonFixedWidthWriter(
             palettes,
-            [img],
+            [invert_image(img)],
             args.max_workers,
             reference_num=args.reference_num,
             max_num_fill_item=args.max_num_fill_item,
@@ -110,7 +110,9 @@ def main():
                                             original_img,
                                             template.char_bound,
                                             antialiasing=args.antialiasing,
-                                            invert_ascii=True)
+                                            invert_ascii=True,
+                                            are_fixed=are_fixed,
+                                            p_cts=p_cts)
     color_blocks = None
     p_cs = []
     if color_result is not None:

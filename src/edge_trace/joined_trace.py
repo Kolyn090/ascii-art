@@ -126,7 +126,7 @@ def trace_join(contour1: np.ndarray, contour2: np.ndarray,
     if not are_fixed:
         nfww = NonFixedWidthWriter(
             palettes,
-            [contour1],
+            [invert_image(contour1)],
             args.max_workers,
             reference_num=args.reference_num,
             max_num_fill_item=args.max_num_fill_item,
@@ -140,7 +140,7 @@ def trace_join(contour1: np.ndarray, contour2: np.ndarray,
         converted1, p_cts1 = nfww.stack(contour1.shape[1])
         nfww = NonFixedWidthWriter(
             palettes,
-            [contour2],
+            [invert_image(contour2)],
             args.max_workers,
             reference_num=args.reference_num,
             max_num_fill_item=args.max_num_fill_item,
