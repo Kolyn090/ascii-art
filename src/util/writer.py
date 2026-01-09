@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from slicer import Cell
 from static import to_binary_strong
 from char_template import CharTemplate, PositionalCharTemplate
-from image_padding import np_pad_rows, np_pad_columns, pad_cells
+from image_padding import np_pad
 
 class Writer:
     def __init__(self,
@@ -21,13 +21,19 @@ class Writer:
                  vector_top_k: int,
                  chars: list[str],
                  antialiasing: bool,
-                 pad: tuple[int, int],
+                 pad_top=0,
+                 pad_bottom=0,
+                 pad_left=0,
+                 pad_right=0,
                  override_widths: dict[str, int] | None = None,
                  override_weights: dict[tuple[str, int], float] | None = None):
         self.image_font = image_font
         self.max_workers = max_workers
         self.char_bound = char_bound
-        self.pad = pad
+        self.pad_top = pad_top
+        self.pad_bottom = pad_bottom
+        self.pad_left = pad_left
+        self.pad_right = pad_right
         self.approx_ratio = approx_ratio if approx_ratio > 0 else 0.5
         self.get_most_similar = self.get_matching_method(match_method)
         self.vector_top_k = vector_top_k if vector_top_k > 0 else 5
@@ -267,9 +273,13 @@ class Writer:
         draw.text((0, 0), char, font=self.image_font, fill="black")
 
         template = np.array(img)
-        template = np_pad_rows(template, self.pad[1], 255)
-        template = np_pad_columns(template, self.pad[0], 255)
-        char_bound = (char_bound[0] + 2 * self.pad[0], char_bound[1] + 2 * self.pad[1])
+        template = np_pad(template,
+                          top=self.pad_top,
+                          bottom=self.pad_bottom,
+                          left=self.pad_left,
+                          right=self.pad_right,
+                          color=255)
+        char_bound = (char_bound[0] + self.pad_left + self.pad_right, char_bound[1] + self.pad_top + self.pad_bottom)
         template_binary = to_binary_strong(template)
         template_small = cv2.resize(template_binary, self.approx_size, interpolation=cv2.INTER_NEAREST)
         template_small = to_binary_strong(template_small)

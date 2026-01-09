@@ -7,7 +7,7 @@ from PIL.ImageFont import FreeTypeFont
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../util')))
 from char_template import CharTemplate, PositionalCharTemplate  # type: ignore
 from static import to_binary_middle, to_binary_strong  # type: ignore
-from image_padding import pil_pad_columns, np_pad_rows, np_pad_columns  # type: ignore
+from image_padding import pil_pad_columns, np_pad  # type: ignore
 
 class FlowWriter:
     """
@@ -23,20 +23,26 @@ class FlowWriter:
                  char_bound: tuple[int, int],
                  override_widths: dict[str, int] | None,
                  image_font: FreeTypeFont,
-                 pad: tuple[int, int],
                  flow_match_method: str,
+                 pad_top=0,
+                 pad_bottom=0,
+                 pad_left=0,
+                 pad_right=0,
                  binary_threshold=90,
                  override_weights: dict[tuple[str, int], float] | None = None,
                  maximum_char_width=60,
                  max_workers=16,
                  antialiasing=False,
                  override_layer_weight: float | None = None):
-        self.char_bound = (char_bound[0] + 2*pad[0], char_bound[1] + 2*pad[1])
+        self.char_bound = (char_bound[0] + pad_left + pad_right, char_bound[1] + pad_top + pad_bottom)
         self.override_widths = override_widths
         self.override_weights = override_weights
         self.image_font = image_font
         self.flow_match_method = flow_match_method
-        self.pad = pad
+        self.pad_top = pad_top
+        self.pad_bottom = pad_bottom
+        self.pad_left = pad_left
+        self.pad_right = pad_right
         self.binary_threshold = binary_threshold
         self.maximum_char_width = maximum_char_width
         self.antialiasing = antialiasing
@@ -238,8 +244,13 @@ class FlowWriter:
             final_bound = (img.size[0], char_bound[1])
 
         template = np.array(img)
-        template = np_pad_columns(template, self.pad[0], 255)
-        final_bound = (final_bound[0] + 2 * self.pad[0], final_bound[1])
+        template = np_pad(template,
+                          top=self.pad_top,
+                          bottom=self.pad_bottom,
+                          left=self.pad_left,
+                          right=self.pad_right,
+                          color=255)
+        final_bound = (final_bound[0] + self.pad_left + self.pad_right, final_bound[1] + self.pad_top + self.pad_bottom)
         template_binary = to_binary_strong(template)
         template_small = template_binary
         template_small = to_binary_strong(template_small)

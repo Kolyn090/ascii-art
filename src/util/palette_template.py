@@ -17,7 +17,10 @@ class PaletteTemplate:
                  approx_ratio=1,
                  vector_top_k=1,
                  match_method='fast',
-                 pad=(0, 0),
+                 pad_top=0,
+                 pad_bottom=0,
+                 pad_left=0,
+                 pad_right=0,
                  override_widths: dict[str, int] | None = None,
                  override_weights: dict[str, float] | None = None,
                  flow_match_method='fast',
@@ -34,7 +37,10 @@ class PaletteTemplate:
         self.override_weights = override_weights
         self.flow_match_method=flow_match_method
         self.binary_threshold=binary_threshold
-        self.pad = pad
+        self.pad_top = pad_top
+        self.pad_bottom = pad_bottom
+        self.pad_left = pad_left
+        self.pad_right = pad_right
         self.override_layer_weight = override_layer_weight
 
     def create_writer(self, max_workers: int, antialiasing: bool) -> Writer:
@@ -49,7 +55,10 @@ class PaletteTemplate:
             override_widths=self.override_widths,
             override_weights=self.override_weights,
             antialiasing=antialiasing,
-            pad=self.pad
+            pad_top=self.pad_top,
+            pad_bottom=self.pad_bottom,
+            pad_left=self.pad_left,
+            pad_right=self.pad_right
         )
 
     def create_flow_writer(self, max_workers: int, antialiasing: bool) -> FlowWriter:
@@ -58,13 +67,16 @@ class PaletteTemplate:
             char_bound=self.char_bound,
             override_widths=self.override_widths,
             image_font=self.image_font,
-            pad=self.pad,
             flow_match_method=self.flow_match_method,
             binary_threshold=self.binary_threshold,
             override_weights=self.override_weights,
             antialiasing=antialiasing,
             max_workers=max_workers,
-            override_layer_weight=self.override_layer_weight
+            override_layer_weight=self.override_layer_weight,
+            pad_top=self.pad_top,
+            pad_bottom=self.pad_bottom,
+            pad_left=self.pad_left,
+            pad_right=self.pad_right
         )
 
     @staticmethod
@@ -91,8 +103,10 @@ class PaletteTemplate:
         approx_ratio=read_optional("approx_ratio", 1)
         vector_top_k=read_optional("vector_top_k", 5)
         match_method=read_optional("match_method", 'fast')
-        pad_width=read_optional("pad_width", 0)
-        pad_height=read_optional("pad_height", 0)
+        pad_top = read_optional("pad_top", 0)
+        pad_bottom = read_optional("pad_bottom", 0)
+        pad_left = read_optional("pad_left", 0)
+        pad_right = read_optional("pad_right", 0)
         override_widths = None
         override_weights = None
         flow_match_method=read_optional("flow_match_method", 'fast')
@@ -118,7 +132,10 @@ class PaletteTemplate:
             approx_ratio=approx_ratio,
             vector_top_k=vector_top_k,
             match_method=match_method,
-            pad=(pad_width, pad_height),
+            pad_top=pad_top,
+            pad_bottom=pad_bottom,
+            pad_left=pad_left,
+            pad_right=pad_right,
             override_widths=override_widths,
             override_weights=override_weights,
             flow_match_method=flow_match_method,
@@ -135,18 +152,18 @@ class PaletteTemplate:
                 f"Vector Top K: {self.vector_top_k}, "
                 f"Method: {self.match_method}, "
                 f"Chars: {chars}, "
-                f"Pad: {self.pad}, "
+                f"Pad: {(self.pad_top, self.pad_bottom, self.pad_left, self.pad_right)}, "
                 f"Override Widths: {self.override_widths}, "
                 f"Override Weights: {self.override_weights}")
 
 def validate_palettes(palettes: list[PaletteTemplate]):
     # 1. Make sure all characters have the same valid cell height
     expected_char_bound_height = palettes[0].char_bound[1]
-    expected_char_bound_height += palettes[0].pad[1] * 2
+    expected_char_bound_height += palettes[0].pad_left + palettes[0].pad_right
     for i in range(1, len(palettes)):
         palette = palettes[i]
         char_bound_height = palette.char_bound[1]
-        char_bound_height += palette.pad[1] * 2
+        char_bound_height += palette.pad_top + palette.pad_right
         if expected_char_bound_height != char_bound_height:
             raise Exception("Invalid Palette: Not all characters have the same valid cell height!")
 
@@ -201,9 +218,9 @@ def are_palettes_fixed_width(palettes: list[PaletteTemplate]) -> bool:
             if width > 0:
                 char_bound_width = width
                 break
-    char_bound_width += 2 * palette0.pad[0]  # Use this as the standard width
+    char_bound_width += palettes[0].pad_left + palettes[0].pad_right  # Use this as the standard width
     for palette in palettes:
-        curr_width = palette.char_bound[0] + 2 * palette.pad[0]
+        curr_width = palette.char_bound[0] + palettes[0].pad_left + palettes[0].pad_right
         if palette.override_widths is None:
             if curr_width != char_bound_width:
                 return False
@@ -212,7 +229,7 @@ def are_palettes_fixed_width(palettes: list[PaletteTemplate]) -> bool:
                 if curr_width <= 0:
                     return False
                 else:
-                    width = curr_width + 2 * palette.pad[0]
+                    width = curr_width + palette.pad_left + palette.pad_right
                     if width != char_bound_width:
                         return False
     return True
