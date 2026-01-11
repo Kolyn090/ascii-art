@@ -13,7 +13,7 @@ Check out the [palette tutorial](../../palette_tut.md).
 3️⃣ Execute `depth_shade.py`.
 **Example**:
 ```commandline
-python depth_shade.py --image_path ../../resource/imgs/monalisa.jpg --resize_factor 4
+python depth_shade.py --image_path ../../resource/imgs/monalisa.jpg --resize_factor 4 --invert_color
 ```
 
 **Parameters**
