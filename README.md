@@ -1,6 +1,80 @@
-# ascii-art
+# 🎨 Real ASCII
+
+> A fast, CLI-first tool for turning images into high-fidelity ASCII art using advanced shading and edge analysis.
+
+<p align="center">
+  <img src="resource/readme_imgs/main_logo.png" width="100%" alt="Project banner">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/kolyn090/real-ascii?style=flat-square">
+  <img src="https://img.shields.io/github/license/kolyn090/real-ascii?style=flat-square">
+</p>
 
 ---
+
+## ✨ Features
+
+- 🔍️ High-resolution ASCII image conversion
+- 📏 Supports variable-width (non-monospace) characters
+- 🎨 Full color rendering support
+- 🧵 Preserves character anti-aliasing for smoother output
+- 🧩 Modular and easy to extend
+- 📦 Lightweight with minimal dependencies
+- 🖼️ Supports PNG / JPG
+- 💻 CLI + Library usage
+
+---
+
+## 🖼️ Gallery (Monospace)
+
+> Example results generated using this library.
+
+### Original
+
+<p align="center">
+  <img src="resource/imgs/flamingo.jpg" width="200">
+</p>
+
+### Filters Preview
+
+| Edge Trace                                                            | Depth Shade                                                           | Contour Shade                                                           |
+|-----------------------------------------------------------------------|-----------------------------------------------------------------------|-------------------------------------------------------------------------|
+| <img src="resource/readme_imgs/main_flamingo_trace.png" width="100%"> | <img src="resource/readme_imgs/main_flamingo_shade.png" width="100%"> | <img src="resource/readme_imgs/main_flamingo_contour.png" width="100%"> |
+
+---
+
+## 🖼️ Gallery (Non-Monospace)
+
+> Example results generated using this library.
+
+### Original
+
+<p align="center">
+  <img src="resource/imgs/turing.jpg" width="200">
+</p>
+
+### Filters Preview
+
+| Edge Trace                                                          | Depth Shade                                                         | Contour Shade                                                         |
+|---------------------------------------------------------------------|---------------------------------------------------------------------|-----------------------------------------------------------------------|
+| <img src="resource/readme_imgs/main_turing_trace.png" width="100%"> | <img src="resource/readme_imgs/main_turing_shade.png" width="100%"> | <img src="resource/readme_imgs/main_turing_contour.png" width="100%"> |
+
+---
+
+## 🚀 Installation
+
+### Using Git
+
+```bash
+git clone https://github.com/Kolyn090/real-ascii.git
+cd real-ascii
+pip install -r requirements.txt
+```
+
+---
+
+## 🧭 Detail
 
 [**Edge Trace ASCII Filter**](src/edge_trace/README.md)
 
@@ -48,3 +122,5 @@ Shade around the edges.
 * girl with pearl earring by Johannes Vermeer (Wikipedia)
 * tsunami by hokusai (Wikipedia)
 * monalisa by Leonardo da Vinci (Wikipedia)
+* [flamingo](https://pin.it/N40Wiy6zx)
+* [Alan Turing](https://m.media-amazon.com/images/M/MV5BMDBkYjhmODYtNDc5Yy00NjVjLTliMWUtOTAyYjQyYjlhMTc4XkEyXkFqcGc@.jpg)
