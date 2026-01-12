@@ -96,7 +96,8 @@ def main():
         converted = invert_image(converted)
     else:
         slicer = Slicer(args.max_workers)
-        padded_char_bound = (template.char_bound[0] + 2*template.pad[0], template.char_bound[1] + 2*template.pad[1])
+        padded_char_bound = (template.char_bound[0] + template.pad_left + template.pad_right,
+                             template.char_bound[1] + template.pad_top + template.pad_bottom)
         cells = slicer.slice(img, padded_char_bound)
         writer = template.create_writer(args.max_workers, args.antialiasing)
         converted, p_cts = writer.match_cells(cells)

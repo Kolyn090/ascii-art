@@ -123,6 +123,10 @@ def trace_join(contour1: np.ndarray, contour2: np.ndarray,
     palettes = [template]
     validate_palettes(palettes)
     are_fixed = are_palettes_fixed_width(palettes)
+
+    msg = "fixed" if are_fixed else "not fixed"
+    print(f"Palette file is {msg}.")
+
     if not are_fixed:
         nfww = NonFixedWidthWriter(
             palettes,
@@ -168,7 +172,10 @@ def trace_join(contour1: np.ndarray, contour2: np.ndarray,
     color_result1 = ColorArgUtil.color_image(args.color_option,
                                              converted1,
                                              original_img,
-                                             template.char_bound)
+                                             template.char_bound,
+                                             antialiasing=args.antialiasing,
+                                             are_fixed=are_fixed,
+                                             p_cts=p_cts1)
     color_blocks1 = None
     p_cs1 = []
     if color_result1 is not None:
@@ -190,7 +197,9 @@ def trace_join(contour1: np.ndarray, contour2: np.ndarray,
                                                converted,
                                                original_img,
                                                template.char_bound,
-                                               antialiasing=args.antialiasing)
+                                               antialiasing=args.antialiasing,
+                                               are_fixed=are_fixed,
+                                               p_cts=p_cts1)
 
     if color_result is not None:
         converted, _, _ = color_result

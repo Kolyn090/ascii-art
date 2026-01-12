@@ -159,13 +159,14 @@ class PaletteTemplate:
 def validate_palettes(palettes: list[PaletteTemplate]):
     # 1. Make sure all characters have the same valid cell height
     expected_char_bound_height = palettes[0].char_bound[1]
-    expected_char_bound_height += palettes[0].pad_left + palettes[0].pad_right
+    expected_char_bound_height += palettes[0].pad_top + palettes[0].pad_bottom
     for i in range(1, len(palettes)):
         palette = palettes[i]
         char_bound_height = palette.char_bound[1]
-        char_bound_height += palette.pad_top + palette.pad_right
+        char_bound_height += palette.pad_top + palette.pad_bottom
         if expected_char_bound_height != char_bound_height:
-            raise Exception("Invalid Palette: Not all characters have the same valid cell height!")
+            raise Exception(f"Invalid Palette: Not all characters have the same valid cell height! "
+                            f"Expected: {expected_char_bound_height}, Got: {char_bound_height}")
 
     # 2. Make sure all values are valid
     def is_greater_than(expected, num):
