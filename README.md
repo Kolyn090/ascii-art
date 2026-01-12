@@ -38,9 +38,10 @@
 
 ### Filters Preview
 
-| Edge Trace                                                            | Depth Shade                                                           | Contour Shade                                                           |
-|-----------------------------------------------------------------------|-----------------------------------------------------------------------|-------------------------------------------------------------------------|
-| <img src="resource/readme_imgs/main_flamingo_trace.png" width="100%"> | <img src="resource/readme_imgs/main_flamingo_shade.png" width="100%"> | <img src="resource/readme_imgs/main_flamingo_contour.png" width="100%"> |
+| Edge Trace                                                                  | Depth Shade                                                                 | Contour Shade                                                                 |
+|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| <img src="resource/readme_imgs/main_flamingo_trace.png" width="100%">       | <img src="resource/readme_imgs/main_flamingo_shade.png" width="100%">       | <img src="resource/readme_imgs/main_flamingo_contour.png" width="100%">       |
+| <img src="resource/readme_imgs/main_flamingo_trace_color.png" width="100%"> | <img src="resource/readme_imgs/main_flamingo_shade_color.png" width="100%"> | <img src="resource/readme_imgs/main_flamingo_contour_color.png" width="100%"> |
 
 ---
 
@@ -56,9 +57,10 @@
 
 ### Filters Preview
 
-| Edge Trace                                                             | Depth Shade                                                            | Contour Shade                                                            |
-|------------------------------------------------------------------------|------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| <img src="resource/readme_imgs/main_sunflower_trace.png" width="100%"> | <img src="resource/readme_imgs/main_sunflower_shade.png" width="100%"> | <img src="resource/readme_imgs/main_sunflower_contour.png" width="100%"> |
+| Edge Trace                                                                   | Depth Shade                                                                  | Contour Shade                                                                  |
+|------------------------------------------------------------------------------|------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| <img src="resource/readme_imgs/main_sunflower_trace.png" width="100%">       | <img src="resource/readme_imgs/main_sunflower_shade.png" width="100%">       | <img src="resource/readme_imgs/main_sunflower_contour.png" width="100%">       |
+| <img src="resource/readme_imgs/main_sunflower_trace_color.png" width="100%"> | <img src="resource/readme_imgs/main_sunflower_shade_color.png" width="100%"> | <img src="resource/readme_imgs/main_sunflower_contour_color.png" width="100%"> |
 
 ---
 
